@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Kagoul — Créer un rendez-vous</title>
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        crossorigin="anonymous" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f9fc;
+      --white:     #ffffff;
+      --border:    #e6e9ee;
+      --purple:    #7c3aed;
+      --purple-h:  #6d28d9;
+      --purple-lt: #ede9fe;
+      --text:      #0b1220;
+      --label:     #334155;
+      --muted:     #64748b;
+      --muted2:    #94a3b8;
+      --error:     #ef4444;
+      --success:   #10b981;
+      --radius:    12px;
+      --radius-s:  8px;
+      --shadow:    0 4px 24px rgba(2,6,23,0.08);
+      --shadow-lg: 0 10px 40px rgba(2,6,23,0.14);
+      --font:      system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100%;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px clamp(14px, 4vw, 40px);
+      gap: 10px;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-back {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-s);
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--label); font-size: 15px;
+      transition: background .15s, color .15s;
+      text-decoration: none;
+    }
+    .nav-back:hover { background: var(--purple-lt); color: var(--purple); }
+    .nav-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .nav-title span { color: var(--purple); }
+
+    /* ── LAYOUT ── */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 40px) clamp(14px, 4vw, 40px) 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── SECTION CARD ── */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(18px, 3vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .section:nth-child(1) { animation-delay: 0.05s; }
+    .section:nth-child(2) { animation-delay: 0.10s; }
+    .section:nth-child(3) { animation-delay: 0.15s; }
+    .section:nth-child(4) { animation-delay: 0.20s; }
+    .section:nth-child(5) { animation-delay: 0.25s; }
+    .section:nth-child(6) { animation-delay: 0.30s; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-s);
+      background: var(--purple-lt);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── FIELD ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    label .req { color: var(--error); font-size: 10px; }
+    label .hint { color: var(--muted2); font-weight: 400; font-size: 11px; margin-left: auto; }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-s);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+    select { cursor: pointer; }
+
+    /* ── TOGGLE PILLS (type de RDV, genre…) ── */
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--label);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+    }
+    .pill:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-lt); }
+    .pill.active {
+      border-color: var(--purple);
+      background: var(--purple);
+      color: #fff;
+    }
+
+    /* ── CHECKBOX LIST ── */
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: var(--radius-s);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      font-size: 12px;
+      color: var(--label);
+      font-weight: 500;
+    }
+    .check-item:hover { border-color: var(--purple); background: var(--purple-lt); color: var(--purple); }
+    .check-item.checked {
+      border-color: var(--purple);
+      background: var(--purple-lt);
+      color: var(--purple);
+    }
+    .check-item input[type="checkbox"] { display: none; }
+    .check-item .ci-icon {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .check-item.checked .ci-icon { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+    /* ── RANGE SLIDER ── */
+    .range-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .range-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      border: none;
+      outline: none;
+      padding: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--purple);
+      cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.18);
+    }
+
+    /* ── CONSENTEMENT ── */
+    .consent-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-s);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: border-color .15s;
+      font-size: 13px;
+      color: var(--label);
+      line-height: 1.5;
+    }
+    .consent-item:hover { border-color: var(--purple); }
+    .consent-item.checked { border-color: var(--success); background: #f0fdf4; }
+    .consent-item input[type="checkbox"] { display: none; }
+    .consent-box {
+      width: 20px; height: 20px;
+      border-radius: 5px;
+      border: 2px solid var(--muted2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all .15s;
+    }
+    .consent-item.checked .consent-box {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .consent-text strong { color: var(--text); }
+
+    /* ── ALERTE INFO ── */
+    .info-box {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-s);
+      background: var(--purple-lt);
+      border: 1px solid rgba(124,58,237,0.2);
+      font-size: 12px;
+      color: var(--purple);
+      line-height: 1.6;
+    }
+    .info-box i { flex-shrink: 0; margin-top: 2px; }
+
+    .warn-box {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-s);
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      font-size: 12px;
+      color: #92400e;
+      line-height: 1.6;
+    }
+    .warn-box i { flex-shrink: 0; margin-top: 2px; }
+
+    /* ── SUBMIT ── */
+    .submit-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      padding: 14px 28px;
+      border-radius: var(--radius-s);
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      transform: skewX(-20deg);
+    }
+    .btn-primary:hover { background: var(--purple-h); box-shadow: 0 4px 16px rgba(124,58,237,0.35); }
+    .btn-primary:hover::after { animation: btnShimmer 0.6s ease forwards; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      padding: 11px 20px;
+      border-radius: var(--radius-s);
+      background: var(--white);
+      color: var(--label);
+      border: 1px solid var(--border);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      width: 100%;
+    }
+    .btn-secondary:hover { background: var(--bg); border-color: var(--purple); color: var(--purple); }
+
+    /* ── MESSAGE GLOBAL ── */
+    #globalMsg {
+      padding: 14px 18px;
+      border-radius: var(--radius-s);
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
+    #globalMsg.ok  { display:block; background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+    #globalMsg.err { display:block; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+
+    /* ── STEP INDICATOR ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 4px;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted2);
+      position: relative;
+      padding-bottom: 8px;
+    }
+    .step::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+    .step.active { color: var(--purple); }
+    .step.active::after { background: var(--purple); }
+    .step.done { color: var(--success); }
+    .step.done::after { background: var(--success); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes btnShimmer { to { left: 150%; } }
+
+    /* ── CHAR COUNTER ── */
+    .char-counter {
+      text-align: right;
+      font-size: 11px;
+      color: var(--muted2);
+      margin-top: 2px;
+    }
+    .char-counter.warn { color: #f59e0b; }
+    .char-counter.over { color: var(--error); }
+  </style>
+</head>
+
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-left">
+    <a class="nav-back" href="index.html" title="Retour">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <div>
+      <div class="nav-title"><span>Kagoul</span> — Créer un RDV</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- Progress -->
+  <div class="steps">
+    <div class="step active">Infos</div>
+    <div class="step active">Qui</div>
+    <div class="step active">Cherche</div>
+    <div class="step active">Règles</div>
+    <div class="step active">Consentement</div>
+  </div>
+
+  <!-- Message global -->
+  <div id="globalMsg"></div>
+
+  <!-- ═══ 1. INFORMATIONS DE BASE ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">✦</div>
+      <div>
+        <div class="section-title">Informations de base</div>
+        <div class="section-sub">Titre, type et détails du rendez-vous</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Titre du rendez-vous <span class="req">*</span></label>
+      <input type="text" id="rdvTitle" maxlength="80" placeholder="Ex : Soirée décontractée Paris 15e…"
+             oninput="updateCounter('rdvTitle','titleCounter',80)" />
+      <div class="char-counter" id="titleCounter">0 / 80</div>
+    </div>
+
+    <div class="field">
+      <label>Type de rencontre <span class="req">*</span></label>
+      <div class="pill-group" id="rdvType">
+        <div class="pill active" data-val="solo">Solo</div>
+        <div class="pill" data-val="couple">Couple</div>
+        <div class="pill" data-val="groupe">Groupe</div>
+        <div class="pill" data-val="soiree">Soirée privée</div>
+        <div class="pill" data-val="cuckold">Cuckold / Vixen</div>
+        <div class="pill" data-val="hotwife">Hotwife / Bull</div>
+        <div class="pill" data-val="echangiste">Couple échangiste</div>
+        <div class="pill" data-val="gangbang">Gang Bang</div>
+        <div class="pill" data-val="bdsm_session">Session BDSM</div>
+        <div class="pill" data-val="libertinage">Soirée libertine</div>
+      </div>
+      <input type="hidden" id="rdvTypeVal" value="solo" />
+    </div>
+
+    <div class="field">
+      <label>Description <span class="req">*</span>
+        <span class="hint">Décris l'ambiance, tes attentes…</span>
+      </label>
+      <textarea id="rdvDesc" maxlength="500" placeholder="Décris librement le rendez-vous…"
+                oninput="updateCounter('rdvDesc','descCounter',500)"></textarea>
+      <div class="char-counter" id="descCounter">0 / 500</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Date <span class="req">*</span></label>
+        <input type="date" id="rdvDate" />
+      </div>
+      <div class="field">
+        <label>Heure <span class="req">*</span></label>
+        <input type="time" id="rdvTime" />
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Durée estimée</label>
+        <select id="rdvDuration">
+          <option value="">Non précisée</option>
+          <option value="1h">~1 h</option>
+          <option value="2h">~2 h</option>
+          <option value="3h">~3 h</option>
+          <option value="4h+">4 h+</option>
+          <option value="nuit">Toute la nuit</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ville / Zone <span class="req">*</span></label>
+        <input type="text" id="rdvCity" placeholder="Ex : Paris 11e, Montréal…" maxlength="80" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Lieu</label>
+      <select id="rdvVenue">
+        <option value="prive">Privé (domicile, appart)</option>
+        <option value="hotel">Hôtel</option>
+        <option value="public">Lieu public (bar, café…)</option>
+        <option value="a_definir">À définir ensemble</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Places disponibles <span class="req">*</span></label>
+        <input type="number" id="rdvSlots" min="1" max="50" value="1" />
+      </div>
+      <div class="field">
+        <label>Dress code</label>
+        <input type="text" id="rdvDress" placeholder="Optionnel…" maxlength="60" />
+      </div>
+    </div>
+
+    <div class="info-box">
+      <i class="fa-solid fa-clock"></i>
+      <span>Ce rendez-vous sera automatiquement <strong>supprimé après 72 h</strong> s'il n'a pas eu lieu.</span>
+    </div>
+  </div>
+
+  <!-- ═══ 2. PROFIL CRÉATEUR ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <div>
+        <div class="section-title">À propos de toi</div>
+        <div class="section-sub">Ce que les participants verront</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Genre <span class="req">*</span></label>
+      <div class="pill-group" id="creatorGender">
+        <div class="pill active" data-val="homme">Homme</div>
+        <div class="pill" data-val="femme">Femme</div>
+        <div class="pill" data-val="non_binaire">Non-binaire</div>
+        <div class="pill" data-val="couple">Couple</div>
+        <div class="pill" data-val="groupe">Groupe</div>
+      </div>
+      <input type="hidden" id="creatorGenderVal" value="homme" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Nombre de personnes présentes</label>
+        <input type="number" id="creatorCount" min="1" max="20" value="1" />
+      </div>
+      <div class="field">
+        <label>Orientation sexuelle</label>
+        <select id="creatorOrientation">
+          <option value="hetero">Hétérosexuel·le</option>
+          <option value="gay_lesbienne">Gay / Lesbienne</option>
+          <option value="bisexuel">Bisexuel·le</option>
+          <option value="pansexuel">Pansexuel·le</option>
+          <option value="autre">Autre</option>
+          <option value="non_precise">Non précisé</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Description physique <span class="hint">Optionnel</span></label>
+      <input type="text" id="creatorDesc" maxlength="120"
+             placeholder="Ex : 35 ans, brun, 1m80…" />
+    </div>
+
+    <div class="field">
+      <label>Niveau d'expérience</label>
+      <div class="pill-group" id="creatorExp">
+        <div class="pill active" data-val="curieux">Curieux·se</div>
+        <div class="pill" data-val="debutant">Débutant·e</div>
+        <div class="pill" data-val="experimente">Expérimenté·e</div>
+      </div>
+      <input type="hidden" id="creatorExpVal" value="curieux" />
+    </div>
+
+    <div class="field">
+      <label>Dynamique / rôle <span class="hint">Si applicable</span></label>
+      <div class="pill-group" id="creatorRole">
+        <div class="pill active" data-val="aucun">Aucune en particulier</div>
+        <div class="pill" data-val="dominant">Dominant·e</div>
+        <div class="pill" data-val="soumis">Soumis·e</div>
+        <div class="pill" data-val="switch">Switch</div>
+        <div class="pill" data-val="cuckold">Cuckold</div>
+        <div class="pill" data-val="vixen">Vixen</div>
+        <div class="pill" data-val="hotwife">Hotwife</div>
+        <div class="pill" data-val="bull">Bull</div>
+        <div class="pill" data-val="candauliste">Candauliste</div>
+        <div class="pill" data-val="voyeur">Voyeur·se</div>
+        <div class="pill" data-val="exhib">Exhib</div>
+      </div>
+      <input type="hidden" id="creatorRoleVal" value="aucun" />
+    </div>
+  </div>
+
+  <!-- ═══ 3. RECHERCHE & MATCHING ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔍</div>
+      <div>
+        <div class="section-title">Ce que tu cherches</div>
+        <div class="section-sub">Pour filtrer et matcher les bons profils</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Profil recherché <span class="req">*</span></label>
+      <div class="pill-group" id="seekGender">
+        <div class="pill active" data-val="femme">Femme</div>
+        <div class="pill" data-val="homme">Homme</div>
+        <div class="pill" data-val="couple">Couple</div>
+        <div class="pill" data-val="groupe">Groupe</div>
+        <div class="pill" data-val="tous">Tous</div>
+      </div>
+      <input type="hidden" id="seekGenderVal" value="femme" />
+    </div>
+
+    <div class="field">
+      <label>Tranche d'âge recherchée</label>
+      <div class="field-row">
+        <div class="field">
+          <label>Âge min <span class="hint">18 min</span></label>
+          <input type="number" id="seekAgeMin" min="18" max="99" value="18" />
+        </div>
+        <div class="field">
+          <label>Âge max</label>
+          <input type="number" id="seekAgeMax" min="18" max="99" value="55" />
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Type de relation</label>
+      <div class="pill-group" id="seekRelType">
+        <div class="pill active" data-val="fun">Fun / Sans lendemain</div>
+        <div class="pill" data-val="regulier">Régulier</div>
+        <div class="pill" data-val="experimentation">Expérimentation</div>
+        <div class="pill" data-val="relation_ouverte">Relation ouverte</div>
+        <div class="pill" data-val="echangisme">Échangisme</div>
+        <div class="pill" data-val="cuckold_vixen">Cuckold / Vixen</div>
+        <div class="pill" data-val="bdsm_regulier">Partenaire BDSM</div>
+      </div>
+      <input type="hidden" id="seekRelTypeVal" value="fun" />
+    </div>
+
+    <div class="field">
+      <label>Nombre de participants souhaités</label>
+      <div class="range-wrap">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="seekCountRange" min="1" max="10" value="1"
+                 oninput="document.getElementById('seekCountVal').textContent = this.value" />
+          <span class="range-val" id="seekCountVal">1</span>
+        </div>
+        <div class="range-labels"><span>1</span><span>10+</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 4. FANTASMES, PRATIQUES & RÈGLES ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔞</div>
+      <div>
+        <div class="section-title">Pratiques & limites</div>
+        <div class="section-sub">Sois précis·e — cela évite les malentendus</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Pratiques acceptées <span class="hint">Choix multiple</span></label>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:4px;">Dynamiques & fantasmes</div>
+      <div class="check-grid" id="practicesAccepted">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="voyeurisme" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Voyeurisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="exhib" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Exhibitionnisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="roleplay" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Role play
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="cuckold" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Cuckold
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="vixen" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Vixen
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="hotwife" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Hotwife
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="candaulisme" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Candaulisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="echangisme" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Échangisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="trio_mfm" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Trio H+H+F
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="trio_fmf" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Trio F+H+F
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="gangbang" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Gang Bang
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="orgie" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Orgie / Partouze
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="dirty_talk" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Dirty talk
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="tantrique" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Tantrique
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="massage_sensuel" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Massage sensuel
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sexe_en_public" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sexe semi-public
+        </label>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:14px;">BDSM & jeux de pouvoir</div>
+      <div class="check-grid">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="bdsm_leger" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> BDSM léger
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="bdsm_intense" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> BDSM intense
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="domination" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Domination
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="soumission" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Soumission
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="bondage" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Bondage
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="shibari" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Shibari
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="menottage" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Menottage
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="blindfold" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Bandeau / Blindfold
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="spanking" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Spanking / Fessée
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="impact_play" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Impact play
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="wax_play" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Wax play (bougie)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="humiliation_consentie" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Humiliation consentie
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="degradation" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Dégradation consentie
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="jeux_pouvoir" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Jeux de pouvoir
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="cnc" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> CNC (consensuel)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="ageplay" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Age play (adultes)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="petplay" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Pet play
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="edgeplay" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Edge play
+        </label>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:14px;">Sextoys & accessoires</div>
+      <div class="check-grid">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sextoys_general" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sextoys (général)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="vibromasseur" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Vibromasseur
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="gode" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Gode / Dildo
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="gode_ceinture" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Gode-ceinture
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="plug_anal" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Plug anal
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="masturbateur" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Masturbateur
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="cage_chastete" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Cage chasteté
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="collier_laisse" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Collier / Laisse
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="jouets_telecommandes" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Jouets télécommandés
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="machine_sexuelle" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Machine sexuelle
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="electrostim" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Électrostim
+        </label>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:14px;">Pratiques sexuelles</div>
+      <div class="check-grid">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sexe_oral" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sexe oral
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="69" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> 69
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="anulingus" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Anulingus / Rimming
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="face_sitting" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Face sitting
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="deepthroat" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Deep throat
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="gorge_profonde" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Gorge profonde
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sexe_anal" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sexe anal
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="double_penetration" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Double pénétration
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="pegging" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Pegging
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="fisting" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Fisting
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="squirting" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Squirting
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="creampie" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Creampie
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="facial" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Facial
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="bukake" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Bukake
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="footjob" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Foot job / Fetish pieds
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="frottage" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Frottage / Tribadisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="handjob" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Handjob / Branlette
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="masturbation_mutuelle" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Masturbation mutuelle
+        </label>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:14px;">Fetishes & spécifique</div>
+      <div class="check-grid">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="lingerie" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Lingerie / Tenue sexy
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="latex_cuir" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Latex / Cuir
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="uniforme" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Uniformes / Costumes
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="fetish_pieds" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Fétiche pieds
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="striptease" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Striptease
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="lapdance" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Lapdance
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="urophilie" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Urophilie (golden shower)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="breeding" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Breeding fantasy
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sexe_en_voiture" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sexe en voiture
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="sexting_live" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Sexting / Live cam
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="photo_video" /><span class="ci-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></span> Photos / Vidéos (consenties)
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Pratiques refusées <span class="hint">Important — sois clair·e</span></label>
+      <textarea id="practicesRefused" maxlength="300"
+                placeholder="Ex : pas de BDSM intense, pas de vidéo, pas de partage de photos…"
+                oninput="updateCounter('practicesRefused','refusedCounter',300)"></textarea>
+      <div class="char-counter" id="refusedCounter">0 / 300</div>
+    </div>
+
+    <div class="field">
+      <label>Fantasmes / description libre <span class="hint">Optionnel</span></label>
+      <textarea id="fantasmes" maxlength="400"
+                placeholder="Décris librement tes fantasmes pour cette rencontre…"
+                oninput="updateCounter('fantasmes','fantasmesCounter',400)"></textarea>
+      <div class="char-counter" id="fantasmesCounter">0 / 400</div>
+    </div>
+
+    <div class="field">
+      <label>Règles personnelles <span class="hint">Respect, hygiène, discrétion…</span></label>
+      <textarea id="rdvRules" maxlength="300"
+                placeholder="Ex : discrétion totale exigée, douche avant le rendez-vous, pas de parfum…"
+                oninput="updateCounter('rdvRules','rulesCounter',300)"></textarea>
+      <div class="char-counter" id="rulesCounter">0 / 300</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Consommation alcool / drogue</label>
+        <select id="rdvSubstances">
+          <option value="non">Non — aucune</option>
+          <option value="alcool_ok">Alcool OK</option>
+          <option value="non_precisé">Non précisé</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Protection obligatoire</label>
+        <select id="rdvProtection">
+          <option value="oui">Oui — préservatif obligatoire</option>
+          <option value="discuter">À discuter</option>
+          <option value="non_precisé">Non précisé</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Test IST</label>
+      <select id="rdvIST">
+        <option value="non_demande">Non demandé</option>
+        <option value="demande">Demandé (résultats récents)</option>
+        <option value="sur_demande">Sur demande uniquement</option>
+      </select>
+    </div>
+
+    <div class="warn-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>
+        <strong>Rappel :</strong> Toute demande d'argent hors plateforme, coercition ou contenu illégal
+        entraîne la <strong>suppression immédiate du compte</strong>.
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ 5. VISIBILITÉ & SÉCURITÉ ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔒</div>
+      <div>
+        <div class="section-title">Visibilité & sécurité</div>
+        <div class="section-sub">Contrôle qui peut voir et rejoindre ton RDV</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Visibilité du RDV</label>
+      <div class="pill-group" id="rdvVisibility">
+        <div class="pill active" data-val="public">Public</div>
+        <div class="pill" data-val="prive">Privé (sur invitation)</div>
+      </div>
+      <input type="hidden" id="rdvVisibilityVal" value="public" />
+    </div>
+
+    <div class="field">
+      <label>Validation des participants</label>
+      <div class="pill-group" id="rdvApproval">
+        <div class="pill active" data-val="auto">Automatique</div>
+        <div class="pill" data-val="manuel">Validation manuelle</div>
+      </div>
+      <input type="hidden" id="rdvApprovalVal" value="auto" />
+    </div>
+
+    <div class="field">
+      <label>Masquer mes photos de profil dans ce RDV</label>
+      <div class="pill-group" id="hidePhotos">
+        <div class="pill active" data-val="non">Non</div>
+        <div class="pill" data-val="oui">Oui</div>
+      </div>
+      <input type="hidden" id="hidePhotosVal" value="non" />
+    </div>
+
+    <div class="info-box">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>
+        Ton adresse exacte et informations personnelles ne sont <strong>jamais partagées</strong>
+        avant que tu l'acceptes explicitement. Utilise uniquement ton pseudo.
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ 6. CONSENTEMENT FINAL ═══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">✅</div>
+      <div>
+        <div class="section-title">Confirmation & consentement</div>
+        <div class="section-sub">Obligatoire pour publier</div>
+      </div>
+    </div>
+
+    <label class="consent-item" id="c1" onclick="toggleConsent(this)">
+      <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:10px"></i></div>
+      <div class="consent-text"><strong>Je certifie avoir au moins 18 ans</strong> et que toutes les personnes concernées par ce rendez-vous sont majeures.</div>
+    </label>
+
+    <label class="consent-item" id="c2" onclick="toggleConsent(this)">
+      <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:10px"></i></div>
+      <div class="consent-text"><strong>Je consens librement</strong> à organiser cette rencontre et je respecterai le droit de chaque participant de se retirer à tout moment, sans pression.</div>
+    </label>
+
+    <label class="consent-item" id="c3" onclick="toggleConsent(this)">
+      <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:10px"></i></div>
+      <div class="consent-text"><strong>Je respecte les CGU de Kagoul</strong> : pas de coercition, pas de prostitution, pas de contenu illégal, pas de mineurs.</div>
+    </label>
+
+    <label class="consent-item" id="c4" onclick="toggleConsent(this)">
+      <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:10px"></i></div>
+      <div class="consent-text"><strong>Je comprends les risques</strong> liés aux rencontres entre inconnus et j'assume ma responsabilité.</div>
+    </label>
+
+    <div class="submit-area">
+      <button class="btn-primary" id="submitBtn" onclick="submitRdv()">
+        <i class="fa-solid fa-paper-plane"></i> Publier le rendez-vous
+      </button>
+      <button class="btn-secondary" onclick="window.history.back()">
+        Annuler
+      </button>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script type="module">
+  import { supabase } from './supabaseClient.js';
+  window._supabase = supabase;
+
+  // Vérifier que l'utilisateur est connecté
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    alert('Tu dois être connecté·e pour créer un rendez-vous.');
+    window.location.href = 'index.html';
+  }
+  window._currentUser = session.user;
+</script>
+
+<script>
+  /* ──────────────────────────────────────────
+     UTILITAIRES UI
+  ────────────────────────────────────────── */
+
+  // Counter caractères
+  function updateCounter(inputId, counterId, max) {
+    const len = document.getElementById(inputId).value.length;
+    const el  = document.getElementById(counterId);
+    el.textContent = `${len} / ${max}`;
+    el.className = 'char-counter' + (len > max * 0.9 ? ' warn' : '') + (len >= max ? ' over' : '');
+  }
+  window.updateCounter = updateCounter;
+
+  // Pills (sélection unique)
+  document.querySelectorAll('.pill-group').forEach(group => {
+    group.addEventListener('click', e => {
+      const pill = e.target.closest('.pill');
+      if (!pill) return;
+      group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const hiddenId = group.id.replace('rdvType','rdvTypeVal')
+                               .replace('creatorGender','creatorGenderVal')
+                               .replace('creatorExp','creatorExpVal')
+                               .replace('seekGender','seekGenderVal')
+                               .replace('seekRelType','seekRelTypeVal')
+                               .replace('rdvVisibility','rdvVisibilityVal')
+                               .replace('rdvApproval','rdvApprovalVal')
+                               .replace('hidePhotos','hidePhotosVal');
+      const map = {
+        rdvType: 'rdvTypeVal',
+        creatorGender: 'creatorGenderVal',
+        creatorExp: 'creatorExpVal',
+        creatorRole: 'creatorRoleVal',
+        seekGender: 'seekGenderVal',
+        seekRelType: 'seekRelTypeVal',
+        rdvVisibility: 'rdvVisibilityVal',
+        rdvApproval: 'rdvApprovalVal',
+        hidePhotos: 'hidePhotosVal',
+      };
+      const hidden = document.getElementById(map[group.id]);
+      if (hidden) hidden.value = pill.dataset.val;
+    });
+  });
+
+  // Checkboxes pratiques
+  function toggleCheck(label) {
+    label.classList.toggle('checked');
+    label.querySelector('input[type="checkbox"]').checked = label.classList.contains('checked');
+  }
+  window.toggleCheck = toggleCheck;
+
+  // Consentement
+  function toggleConsent(label) {
+    label.classList.toggle('checked');
+    label.querySelector('input[type="checkbox"]').checked = label.classList.contains('checked');
+  }
+  window.toggleConsent = toggleConsent;
+
+  // Date min = aujourd'hui
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('rdvDate').min = today;
+
+  /* ──────────────────────────────────────────
+     COLLECTE DES DONNÉES
+  ────────────────────────────────────────── */
+  function getFormData() {
+    const checked = (id) => document.getElementById(id)?.checked ?? false;
+    const val     = (id) => document.getElementById(id)?.value?.trim() ?? '';
+    const intVal  = (id) => parseInt(document.getElementById(id)?.value ?? '0', 10) || 0;
+
+    const practices = [];
+    document.querySelectorAll('.check-item.checked input[type="checkbox"]').forEach(inp => {
+      practices.push(inp.value);
+    });
+
+    const consents = ['c1','c2','c3','c4'].map(id => document.getElementById(id)?.classList.contains('checked'));
+
+    return {
+      title:               val('rdvTitle'),
+      type:                val('rdvTypeVal'),
+      description:         val('rdvDesc'),
+      date:                val('rdvDate'),
+      time:                val('rdvTime'),
+      duration:            val('rdvDuration'),
+      city:                val('rdvCity'),
+      venue:               val('rdvVenue'),
+      slots:               intVal('rdvSlots'),
+      dress_code:          val('rdvDress'),
+
+      creator_gender:      val('creatorGenderVal'),
+      creator_role:        val('creatorRoleVal'),
+      creator_count:       intVal('creatorCount'),
+      creator_orientation: val('creatorOrientation'),
+      creator_desc:        val('creatorDesc'),
+      creator_exp:         val('creatorExpVal'),
+
+      seek_gender:         val('seekGenderVal'),
+      seek_age_min:        intVal('seekAgeMin'),
+      seek_age_max:        intVal('seekAgeMax'),
+      seek_rel_type:       val('seekRelTypeVal'),
+      seek_count:          intVal('seekCountRange'),
+
+      practices_accepted:  practices,
+      practices_refused:   val('practicesRefused'),
+      fantasmes:           val('fantasmes'),
+      rules:               val('rdvRules'),
+      substances:          val('rdvSubstances'),
+      protection:          val('rdvProtection'),
+      ist:                 val('rdvIST'),
+
+      visibility:          val('rdvVisibilityVal'),
+      approval:            val('rdvApprovalVal'),
+      hide_photos:         val('hidePhotosVal') === 'oui',
+
+      consents,
+    };
+  }
+
+  /* ──────────────────────────────────────────
+     VALIDATION
+  ────────────────────────────────────────── */
+  function validate(data) {
+    const errs = [];
+    if (!data.title)       errs.push('Titre obligatoire.');
+    if (!data.description) errs.push('Description obligatoire.');
+    if (!data.date)        errs.push('Date obligatoire.');
+    if (!data.time)        errs.push('Heure obligatoire.');
+    if (!data.city)        errs.push('Ville / zone obligatoire.');
+    if (data.slots < 1)    errs.push('Au moins 1 place disponible.');
+    if (data.seek_age_min < 18) errs.push('L\'âge minimum recherché doit être ≥ 18 ans.');
+    if (data.seek_age_max < data.seek_age_min) errs.push('L\'âge max doit être ≥ âge min.');
+    if (!data.consents.every(Boolean)) errs.push('Toutes les cases de consentement doivent être cochées.');
+    return errs;
+  }
+
+  /* ──────────────────────────────────────────
+     SOUMISSION
+  ────────────────────────────────────────── */
+  async function submitRdv() {
+    const msgEl = document.getElementById('globalMsg');
+    const btn   = document.getElementById('submitBtn');
+
+    msgEl.className = '';
+    msgEl.textContent = '';
+
+    const data   = getFormData();
+    const errors = validate(data);
+
+    if (errors.length) {
+      msgEl.className = 'err';
+      msgEl.textContent = errors.join(' ');
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const supabase = window._supabase;
+    const user     = window._currentUser;
+
+    if (!supabase || !user) {
+      msgEl.className = 'err';
+      msgEl.textContent = 'Session expirée — recharge la page et reconnecte-toi.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publication…';
+
+    try {
+      // Récupérer le profile_id depuis k_profiles
+      const { data: profile, error: pErr } = await supabase
+        .from('k_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (pErr || !profile) throw new Error('Profil introuvable.');
+
+      // Construire l'objet RDV
+      const rdvPayload = {
+        profile_id:          profile.id,
+        title:               data.title,
+        type:                data.type,
+        description:         data.description,
+        rdv_date:            data.date,
+        rdv_time:            data.time,
+        duration:            data.duration || null,
+        city:                data.city,
+        venue:               data.venue,
+        slots_available:     data.slots,
+        dress_code:          data.dress_code || null,
+
+        creator_gender:      data.creator_gender,
+        creator_role:        data.creator_role,
+        creator_count:       data.creator_count,
+        creator_orientation: data.creator_orientation,
+        creator_desc:        data.creator_desc || null,
+        creator_exp:         data.creator_exp,
+
+        seek_gender:         data.seek_gender,
+        seek_age_min:        data.seek_age_min,
+        seek_age_max:        data.seek_age_max,
+        seek_rel_type:       data.seek_rel_type,
+        seek_count:          data.seek_count,
+
+        practices_accepted:  data.practices_accepted,
+        practices_refused:   data.practices_refused || null,
+        fantasmes:           data.fantasmes || null,
+        rules:               data.rules || null,
+        substances:          data.substances,
+        protection:          data.protection,
+        ist:                 data.ist,
+
+        visibility:          data.visibility,
+        approval_mode:       data.approval,
+        hide_photos:         data.hide_photos,
+
+        status:              'active',
+        expires_at:          new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+      };
+
+      const { data: inserted, error: insErr } = await supabase
+        .from('k_rendezvous')
+        .insert(rdvPayload)
+        .select('id')
+        .single();
+
+      if (insErr) throw insErr;
+
+      msgEl.className = 'ok';
+      msgEl.textContent = '✓ Rendez-vous publié avec succès ! Tu vas être redirigé…';
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      setTimeout(() => {
+        window.location.href = `rdv-detail.html?id=${inserted.id}`;
+      }, 1800);
+
+    } catch (err) {
+      console.error('submitRdv error', err);
+      msgEl.className = 'err';
+      msgEl.textContent = `Erreur : ${err.message || 'Réessaye dans quelques instants.'}`;
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publier le rendez-vous';
+    }
+  }
+  window.submitRdv = submitRdv;
+</script>
+
+</body>
+</html>
