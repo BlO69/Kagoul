@@ -1,0 +1,208 @@
+{
+  "pays": "Haïti",
+  "code": "HT",
+  "departements": [
+    {
+      "nom": "Artibonite",
+      "arrondissements": [
+        {
+          "nom": "Gonaïves",
+          "communes": ["Gonaïves", "Ennery", "L'Estère"]
+        },
+        {
+          "nom": "Gros-Morne",
+          "communes": ["Gros-Morne", "Anse-Rouge", "Terre-Neuve"]
+        },
+        {
+          "nom": "Saint-Marc",
+          "communes": ["Saint-Marc", "Verrettes", "La Chapelle"]
+        },
+        {
+          "nom": "Dessalines",
+          "communes": ["Dessalines", "Desdunes", "Grande-Saline", "Petite-Rivière-de-l’Artibonite"]
+        }
+      ]
+    },
+    {
+      "nom": "Centre",
+      "arrondissements": [
+        {
+          "nom": "Hinche",
+          "communes": ["Hinche", "Cerca-Carvajal", "Maïssade", "Thomonde"]
+        },
+        {
+          "nom": "Mirebalais",
+          "communes": ["Mirebalais", "Boucan-Carré", "Saut-d’Eau"]
+        },
+        {
+          "nom": "Lascahobas",
+          "communes": ["Lascahobas", "Belladère", "Savanette"]
+        },
+        {
+          "nom": "Cerca-la-Source",
+          "communes": ["Cerca-la-Source", "Thomassique"]
+        }
+      ]
+    },
+    {
+      "nom": "Grand’Anse",
+      "arrondissements": [
+        {
+          "nom": "Jérémie",
+          "communes": ["Jérémie", "Abricots", "Bonbon", "Chambellan", "Marfranc", "Moron"]
+        },
+        {
+          "nom": "Anse-d’Hainault",
+          "communes": ["Anse-d’Hainault", "Dame-Marie", "Les Irois"]
+        },
+        {
+          "nom": "Corail",
+          "communes": ["Corail", "Beaumont", "Roseaux", "Pestel"]
+        }
+      ]
+    },
+    {
+      "nom": "Nippes",
+      "arrondissements": [
+        {
+          "nom": "Miragoâne",
+          "communes": ["Miragoâne", "Fonds-des-Nègres", "Paillant", "Petite-Rivière-de-Nippes"]
+        },
+        {
+          "nom": "Anse-à-Veau",
+          "communes": ["Anse-à-Veau", "Arnaud", "Plaisance-du-Sud", "Petit-Trou-de-Nippes", "L’Asile"]
+        },
+        {
+          "nom": "Baradères",
+          "communes": ["Baradères", "Grand-Boucan"]
+        }
+      ]
+    },
+    {
+      "nom": "Nord",
+      "arrondissements": [
+        {
+          "nom": "Cap-Haïtien",
+          "communes": ["Cap-Haïtien", "Limonade", "Quartier-Morin"]
+        },
+        {
+          "nom": "Acul-du-Nord",
+          "communes": ["Acul-du-Nord", "Plaine-du-Nord", "Milot"]
+        },
+        {
+          "nom": "Grande-Rivière-du-Nord",
+          "communes": ["Grande-Rivière-du-Nord", "Bahon"]
+        },
+        {
+          "nom": "Plaisance",
+          "communes": ["Plaisance", "Pilate"]
+        },
+        {
+          "nom": "Borgne",
+          "communes": ["Borgne", "Port-Margot"]
+        },
+        {
+          "nom": "Saint-Raphaël",
+          "communes": ["Saint-Raphaël", "Dondon", "Ranquitte", "Pignon", "La Victoire"]
+        }
+      ]
+    },
+    {
+      "nom": "Nord-Est",
+      "arrondissements": [
+        {
+          "nom": "Fort-Liberté",
+          "communes": ["Fort-Liberté", "Ferrier", "Perches"]
+        },
+        {
+          "nom": "Ouanaminthe",
+          "communes": ["Ouanaminthe", "Capotille", "Mont-Organisé"]
+        },
+        {
+          "nom": "Trou-du-Nord",
+          "communes": ["Trou-du-Nord", "Caracol", "Sainte-Suzanne", "Terrier-Rouge"]
+        },
+        {
+          "nom": "Vallières",
+          "communes": ["Vallières", "Carice", "Mombin-Crochu"]
+        }
+      ]
+    },
+    {
+      "nom": "Nord-Ouest",
+      "arrondissements": [
+        {
+          "nom": "Port-de-Paix",
+          "communes": ["Port-de-Paix", "Bassin-Bleu", "Chansolme", "La Tortue"]
+        },
+        {
+          "nom": "Saint-Louis-du-Nord",
+          "communes": ["Saint-Louis-du-Nord", "Anse-à-Foleur"]
+        },
+        {
+          "nom": "Môle-Saint-Nicolas",
+          "communes": ["Môle-Saint-Nicolas", "Baie-de-Henne", "Bombardopolis", "Jean-Rabel"]
+        }
+      ]
+    },
+    {
+      "nom": "Ouest",
+      "arrondissements": [
+        {
+          "nom": "Port-au-Prince",
+          "communes": ["Port-au-Prince", "Carrefour", "Cité-Soleil", "Delmas", "Pétion-Ville", "Kenscoff", "Tabarre"]
+        },
+        {
+          "nom": "Arcahaie",
+          "communes": ["Arcahaie", "Cabaret"]
+        },
+        {
+          "nom": "Croix-des-Bouquets",
+          "communes": ["Croix-des-Bouquets", "Cornillon", "Fonds-Verrettes", "Ganthier"]
+        },
+        {
+          "nom": "Léogâne",
+          "communes": ["Léogâne", "Grand-Goâve", "Petit-Goâve"]
+        }
+      ]
+    },
+    {
+      "nom": "Sud",
+      "arrondissements": [
+        {
+          "nom": "Les Cayes",
+          "communes": ["Les Cayes", "Chantal", "Camp-Perrin", "Torbeck", "Maniche"]
+        },
+        {
+          "nom": "Aquin",
+          "communes": ["Aquin", "Cavaillon", "Saint-Louis-du-Sud"]
+        },
+        {
+          "nom": "Port-Salut",
+          "communes": ["Port-Salut", "Arniquet", "Saint-Jean-du-Sud"]
+        },
+        {
+          "nom": "Côtes-de-Fer",
+          "communes": ["Côtes-de-Fer"]
+        }
+      ]
+    },
+    {
+      "nom": "Sud-Est",
+      "arrondissements": [
+        {
+          "nom": "Jacmel",
+          "communes": ["Jacmel", "Cayes-Jacmel", "Marigot", "La Vallée"]
+        },
+        {
+          "nom": "Bainet",
+          "communes": ["Bainet", "Côtes-de-Fer"]
+        },
+        {
+          "nom": "Belle-Anse",
+          "communes": ["Belle-Anse", "Anse-à-Pitres", "Grand-Gosier", "Thiotte"]
+        }
+      ]
+    }
+  ]
+}

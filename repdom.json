@@ -1,0 +1,134 @@
+{
+  "pays": "République Dominicaine",
+  "code": "DO",
+  "provinces": [
+    {
+      "nom": "Distrito Nacional",
+      "municipalites": ["Santo Domingo de Guzmán"]
+    },
+    {
+      "nom": "Azua",
+      "municipalites": ["Azua de Compostela", "Estebanía", "Guayabal", "Las Charcas", "Las Yayas de Viajama", "Padre Las Casas", "Peralta", "Pueblo Viejo", "Sabana Yegua", "Tábara Arriba"]
+    },
+    {
+      "nom": "Baoruco",
+      "municipalites": ["Neiba", "Galván", "Los Ríos", "Tamayo", "Villa Jaragua"]
+    },
+    {
+      "nom": "Barahona",
+      "municipalites": ["Barahona", "Cabral", "El Peñón", "Enriquillo", "Fundación", "Jaquimeyes", "La Ciénaga", "Las Salinas", "Paraíso", "Polo", "Vicente Noble"]
+    },
+    {
+      "nom": "Dajabón",
+      "municipalites": ["Dajabón", "El Pino", "Loma de Cabrera", "Partido", "Restauración"]
+    },
+    {
+      "nom": "Duarte",
+      "municipalites": ["San Francisco de Macorís", "Arenoso", "Castillo", "Eugenio María de Hostos", "Las Guáranas", "Pimentel", "Villa Riva"]
+    },
+    {
+      "nom": "Elías Piña",
+      "municipalites": ["Comendador", "Bánica", "El Llano", "Hondo Valle", "Juan Santiago", "Pedro Santana"]
+    },
+    {
+      "nom": "El Seibo",
+      "municipalites": ["Santa Cruz del Seibo", "Miches"]
+    },
+    {
+      "nom": "Espaillat",
+      "municipalites": ["Moca", "Cayetano Germosén", "Gaspar Hernández", "Jamao al Norte"]
+    },
+    {
+      "nom": "Hato Mayor",
+      "municipalites": ["Hato Mayor del Rey", "El Valle", "Sabana de la Mar"]
+    },
+    {
+      "nom": "Hermanas Mirabal",
+      "municipalites": ["Salcedo", "Tenares", "Villa Tapia"]
+    },
+    {
+      "nom": "Independencia",
+      "municipalites": ["Jimaní", "Cristóbal", "Duvergé", "La Descubierta", "Mella", "Postrer Río"]
+    },
+    {
+      "nom": "La Altagracia",
+      "municipalites": ["Salvaleón de Higüey", "San Rafael del Yuma"]
+    },
+    {
+      "nom": "La Romana",
+      "municipalites": ["La Romana", "Guaymate", "Villa Hermosa"]
+    },
+    {
+      "nom": "La Vega",
+      "municipalites": ["La Vega", "Constanza", "Jarabacoa", "Jima Abajo"]
+    },
+    {
+      "nom": "María Trinidad Sánchez",
+      "municipalites": ["Nagua", "Cabrera", "El Factor", "Río San Juan"]
+    },
+    {
+      "nom": "Monseñor Nouel",
+      "municipalites": ["Bonao", "Maimón", "Piedra Blanca"]
+    },
+    {
+      "nom": "Monte Cristi",
+      "municipalites": ["San Fernando de Monte Cristi", "Castañuela", "Guayubín", "Las Matas de Santa Cruz", "Pepillo Salcedo", "Villa Vásquez"]
+    },
+    {
+      "nom": "Monte Plata",
+      "municipalites": ["Monte Plata", "Bayaguana", "Peralvillo", "Sabana Grande de Boyá", "Yamasá"]
+    },
+    {
+      "nom": "Pedernales",
+      "municipalites": ["Pedernales", "Oviedo"]
+    },
+    {
+      "nom": "Peravia",
+      "municipalites": ["Baní", "Nizao"]
+    },
+    {
+      "nom": "Puerto Plata",
+      "municipalites": ["San Felipe de Puerto Plata", "Altamira", "Guananico", "Imbert", "Los Hidalgos", "Luperón", "Sosúa", "Villa Isabela", "Villa Montellano"]
+    },
+    {
+      "nom": "Samaná",
+      "municipalites": ["Santa Bárbara de Samaná", "Las Terrenas", "Sánchez"]
+    },
+    {
+      "nom": "San Cristóbal",
+      "municipalites": ["San Cristóbal", "Bajos de Haina", "Cambita Garabitos", "Los Cacaos", "Sabana Grande de Palenque", "San Gregorio de Nigua", "Villa Altagracia", "Yaguate"]
+    },
+    {
+      "nom": "San José de Ocoa",
+      "municipalites": ["San José de Ocoa", "Rancho Arriba", "Sabana Larga"]
+    },
+    {
+      "nom": "San Juan",
+      "municipalites": ["San Juan de la Maguana", "Bohechío", "El Cercado", "Juan de Herrera", "Las Matas de Farfán", "Vallejuelo"]
+    },
+    {
+      "nom": "San Pedro de Macorís",
+      "municipalites": ["San Pedro de Macorís", "Consuelo", "Guayacanes", "Los Llanos", "Quisqueya", "Ramón Santana"]
+    },
+    {
+      "nom": "Sánchez Ramírez",
+      "municipalites": ["Cotuí", "Cevicos", "Fantino", "La Mata"]
+    },
+    {
+      "nom": "Santiago",
+      "municipalites": ["Santiago de los Caballeros", "Bisonó (Navarrete)", "Jánico", "Licey al Medio", "Puñal", "Sabana Iglesia", "San José de las Matas", "Tamboril", "Villa González"]
+    },
+    {
+      "nom": "Santiago Rodríguez",
+      "municipalites": ["San Ignacio de Sabaneta", "Los Almácigos", "Monción"]
+    },
+    {
+      "nom": "Santo Domingo",
+      "municipalites": ["Santo Domingo Este", "Santo Domingo Norte", "Santo Domingo Oeste", "Boca Chica", "Los Alcarrizos", "Pedro Brand"]
+    },
+    {
+      "nom": "Valverde",
+      "municipalites": ["Mao", "Esperanza", "Laguna Salada"]
+    }
+  ]
+}
