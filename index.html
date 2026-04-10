@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Kagoul</title>
+
+  <!-- Google Fonts — même que creer.html -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        crossorigin="anonymous" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0c0e13;
+      --surface:   #13161e;
+      --surface2:  #1a1e29;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.12);
+      --purple:    #7c3aed;
+      --purple-h:  #6d28d9;
+      --purple-lt: rgba(124,58,237,0.10);
+      --purple-dim:rgba(124,58,237,0.35);
+      --text:      #f0ece4;
+      --label:     #c9c4ba;
+      --muted:     #7a7d8a;
+      --muted2:    #4a4d5a;
+      --error:     #e05555;
+      --radius:    14px;
+      --radius-s:  9px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.35);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.55);
+      --font-d:    'Cormorant Garamond', Georgia, serif;
+      --font-b:    'DM Sans', system-ui, sans-serif;
+      --font:      'DM Sans', system-ui, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-b);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      height: 100vh;
+      padding: 0 clamp(14px, 4vw, 40px);
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 10px;
+      animation: slideDown 0.4s ease both;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    #navLogoCanvas {
+      display: block;
+      filter: drop-shadow(0 0 6px rgba(124,58,237,0.30));
+    }
+    .nav-logo-text {
+      font-family: var(--font-d);
+      font-size: clamp(17px, 2.8vw, 21px);
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .nav-logo-text em { color: var(--purple); font-style: normal; }
+
+    /* Hamburger button */
+    .menu-toggle {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-s);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .menu-toggle:hover { background: var(--purple-lt); border-color: var(--purple-dim); color: var(--purple); }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── LANDING (gate) ── */
+    .landing {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(16px, 3vh, 28px);
+      text-align: center;
+      animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.1s;
+    }
+
+    .landing-logo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #heroCanvas {
+      display: block;
+      filter: drop-shadow(0 0 14px rgba(124,58,237,0.30));
+    }
+
+    .landing-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--purple);
+      background: var(--purple-lt);
+      border: 1px solid var(--purple-dim);
+      padding: 3px 12px;
+      border-radius: 20px;
+      animation: badgePulse 2.5s ease-in-out infinite 1s;
+    }
+
+    .landing-title {
+      font-family: var(--font-d);
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .landing-title em { color: var(--purple); font-style: italic; }
+
+    .landing-sub {
+      font-size: clamp(13px, 2vw, 15px);
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 380px;
+      font-weight: 300;
+    }
+    .landing-sub strong { color: var(--text); font-weight: 500; }
+
+    .landing-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .landing-actions .btn-primary { font-size: 14px; padding: 10px 28px; }
+    .landing-actions .btn-google {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-s);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--label);
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .landing-actions .btn-google:hover { background: var(--surface); box-shadow: var(--shadow); border-color: var(--purple-dim); }
+    .landing-actions .btn-google img { width: 18px; height: 18px; }
+
+    /* ── DASHBOARD (authed) — message minimaliste ── */
+    .dashboard {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(18px, 3vh, 30px);
+      text-align: center;
+      animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      padding: 0 clamp(12px, 3vw, 24px);
+    }
+
+    .dash-message {
+      font-family: var(--font-d);
+      font-size: clamp(18px, 3.5vw, 26px);
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.55;
+      letter-spacing: 0.01em;
+    }
+    .dash-message em { color: var(--purple); font-style: italic; }
+
+    .dash-logo-img {
+      width: clamp(120px, 30vw, 200px);
+      height: auto;
+      border-radius: var(--radius);
+      opacity: 0.92;
+      animation: fadeUp 0.6s ease both 0.2s;
+      filter: drop-shadow(0 6px 24px rgba(124,58,237,0.22));
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 12px 0 14px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      animation: slideUp 0.4s ease both 0.2s;
+    }
+    .footer-text { font-size: 11px; color: var(--muted2); }
+    .footer-text a { color: var(--muted2); text-decoration: none; }
+    .footer-text a:hover { color: var(--muted); }
+
+    /* ── BUTTONS (shared) ── */
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      padding: 10px 20px;
+      border-radius: var(--radius-s);
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: skewX(-20deg);
+    }
+    .btn-primary:hover { background: var(--purple-h); box-shadow: 0 4px 18px rgba(124,58,237,0.38); }
+    .btn-primary:hover::after { animation: btnShimmer 0.6s ease forwards; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* ── DRAWER ── */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(320px, 90vw);
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border2);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(105%);
+      transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      box-shadow: -8px 0 56px rgba(0,0,0,0.55);
+      overflow-y: auto;
+    }
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    /* Drawer top bar */
+    .drawer-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer-brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .drawer-brand-text {
+      font-family: var(--font-d);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .drawer-brand-text em { color: var(--purple); font-style: normal; }
+    #drawerClose {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    #drawerClose:hover { background: var(--surface2); color: var(--text); }
+
+    /* ── Drawer: GATE state ── */
+    .drawer-gate-body {
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .drawer-gate-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .drawer-gate-sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 6px;
+      font-weight: 300;
+    }
+    .drawer-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 16px;
+      border-radius: var(--radius-s);
+      font-family: var(--font-b);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .drawer-btn.primary {
+      background: var(--purple);
+      color: #fff;
+      border: none;
+    }
+    .drawer-btn.primary:hover { background: var(--purple-h); }
+    .drawer-btn.secondary {
+      background: var(--surface2);
+      color: var(--label);
+      border: 1px solid var(--border2);
+    }
+    .drawer-btn.secondary:hover { background: var(--purple-lt); color: var(--purple); border-color: var(--purple-dim); }
+
+    /* ── Drawer: AUTHED state ── */
+    .drawer-user-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .drawer-avatar-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--purple);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      overflow: hidden;
+      border: 2px solid var(--purple-dim);
+    }
+    .drawer-avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .avatar-cam-label {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1.5px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 9px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .avatar-cam-label:hover {
+      background: var(--purple);
+      color: #fff;
+      border-color: var(--purple);
+    }
+    #avatarFileInput { display: none; }
+
+    .drawer-user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .drawer-pseudo {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .drawer-upload-status {
+      font-size: 11px;
+      color: var(--purple);
+      min-height: 15px;
+    }
+    .drawer-upload-hint {
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    /* Nav links in drawer */
+    .drawer-nav-body {
+      padding: 12px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer-nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px 8px 4px;
+    }
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 10px;
+      border-radius: var(--radius-s);
+      color: var(--label);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+      user-select: none;
+    }
+    .drawer-link:hover {
+      background: var(--purple-lt);
+      color: var(--purple);
+    }
+    .drawer-link .link-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-s);
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .drawer-link:hover .link-icon {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .drawer-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    .drawer-signout {
+      margin: 12px 10px;
+      padding: 11px 16px;
+      border-radius: var(--radius-s);
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border2);
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .drawer-signout:hover {
+      background: rgba(224,85,85,0.08);
+      color: var(--error);
+      border-color: rgba(224,85,85,0.35);
+    }
+
+    /* ── STATE VISIBILITY ── */
+    .state-gate  .show-authed,
+    .state-authed .show-gate { display: none !important; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes btnShimmer { to { left: 150%; } }
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.3); }
+      50%       { box-shadow: 0 0 0 5px rgba(124,58,237,0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 380px) {
+      .dash-message { font-size: 16px; }
+    }
+  </style>
+</head>
+
+<!--
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  MIGRATION SUPABASE REQUISE (à exécuter une seule fois dans SQL)   │
+  │                                                                    │
+  │  ALTER TABLE k_profiles                                            │
+  │    ADD COLUMN IF NOT EXISTS avatar_url TEXT;                       │
+  └────────────────────────────────────────────────────────────────────┘
+-->
+
+<body class="state-gate">
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="shell">
+
+  <!-- ══ NAV ══ -->
+  <nav>
+    <div class="nav-logo">
+      <canvas id="navLogoCanvas" width="40" height="40"></canvas>
+      <span class="nav-logo-text"><em>Kagoul</em></span>
+    </div>
+
+    <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <main>
+
+    <!-- Landing (gate only) -->
+    <div class="landing show-gate">
+
+      <div class="landing-logo-wrap">
+        <canvas id="heroCanvas" width="150" height="150"></canvas>
+      </div>
+
+      <span class="landing-badge">Réservé aux +18 ans</span>
+
+      <h1 class="landing-title">
+        Rencontres entre adultes,<br/><em>sans détour.</em>
+      </h1>
+
+      <p class="landing-sub">
+        Crée ou rejoins un rendez-vous — en individuel, en couple ou en groupe.
+        Chaque rencontre expire en <strong>72 h</strong>.
+        Simple, discret, sécurisé.
+      </p>
+
+      <div class="landing-actions">
+        <button class="btn-primary"
+                onclick="window.openAuthModal && window.openAuthModal('login')">
+          Se connecter
+        </button>
+        <button class="btn-google"
+                onclick="window.openAuthModal && window.openAuthModal('signup')">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+          Continuer avec Google
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Dashboard (authed only) — message minimaliste -->
+    <div class="dashboard show-authed">
+      <p class="dash-message">
+        Cheri, ou wè fanm sa yap konyen sou kabann nan?<br/>
+        Ou rekonèt li wi&nbsp;! Ou pa wè kiyès&nbsp;?<br/>
+        <em>Se mwen wi, madanm ou.</em><br/>
+        M jus met&nbsp;:
+      </p>
+      <img class="dash-logo-img" src="logo3.png" alt="logo3" />
+    </div>
+
+  </main>
+
+  <footer>
+    <p class="footer-text">
+      © 2025 Kagoul &nbsp;·&nbsp; Réservé aux adultes (+18)
+      &nbsp;·&nbsp; <a href="#">Confidentialité</a>
+      &nbsp;·&nbsp; <a href="#">CGU</a>
+    </p>
+  </footer>
+
+</div>
+
+<!-- ══ DRAWER OVERLAY ══ -->
+<div id="drawerOverlay" class="drawer-overlay"></div>
+
+<!-- ══ DRAWER PANEL ══ -->
+<aside id="drawer" class="drawer" role="dialog" aria-label="Menu">
+
+  <!-- Top bar -->
+  <div class="drawer-topbar">
+    <div class="drawer-brand">
+      <span class="drawer-brand-text"><em>Kagoul</em></span>
+    </div>
+    <button id="drawerClose" aria-label="Fermer le menu">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- ── GATE : connexion / inscription ── -->
+  <div class="show-gate drawer-gate-body">
+    <p class="drawer-gate-title">Bienvenue 👋</p>
+    <p class="drawer-gate-sub">
+      Rejoins Kagoul pour créer ou rejoindre des rencontres entre adultes. Réservé aux +18 ans.
+    </p>
+    <button class="drawer-btn primary"
+            onclick="closeDrawer(); window.openAuthModal && window.openAuthModal('login')">
+      <i class="fa-solid fa-right-to-bracket"></i> Se connecter
+    </button>
+    <button class="drawer-btn secondary"
+            onclick="closeDrawer(); window.openAuthModal && window.openAuthModal('signup')">
+      <i class="fa-solid fa-user-plus"></i> Créer un compte
+    </button>
+  </div>
+
+  <!-- ── AUTHED : profil + navigation ── -->
+  <div class="show-authed" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+
+    <!-- Avatar + pseudo -->
+    <div class="drawer-user-header">
+      <div class="drawer-avatar-wrap">
+        <div class="drawer-avatar-circle" id="drawerAvatarEl">?</div>
+        <label class="avatar-cam-label" for="avatarFileInput" title="Changer la photo de profil">
+          <i class="fa-solid fa-camera"></i>
+        </label>
+        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp,image/gif" />
+      </div>
+      <div class="drawer-user-info">
+        <span class="drawer-pseudo" id="drawerPseudoEl">—</span>
+        <span class="drawer-upload-status" id="drawerUploadStatus"></span>
+        <span class="drawer-upload-hint">Tap 📷 pour changer la photo</span>
+      </div>
+    </div>
+
+    <!-- Nav links -->
+    <div class="drawer-nav-body">
+      <p class="drawer-nav-section-label">Navigation</p>
+
+      <a class="drawer-link" onclick="navigate('creer'); closeDrawer()">
+        <span class="link-icon"><i class="fa-solid fa-plus"></i></span>
+        Créer un RDV
+      </a>
+      <a class="drawer-link" onclick="navigate('participer'); closeDrawer()">
+        <span class="link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        Participer
+      </a>
+      <a class="drawer-link" onclick="navigate('mes-rdv'); closeDrawer()">
+        <span class="link-icon"><i class="fa-regular fa-calendar"></i></span>
+        Mes RDV
+      </a>
+      <a class="drawer-link" onclick="navigate('profil'); closeDrawer()">
+        <span class="link-icon"><i class="fa-regular fa-user"></i></span>
+        Mon profil
+      </a>
+
+      <div class="drawer-divider"></div>
+      <p class="drawer-nav-section-label">Compte</p>
+      <a class="drawer-link" onclick="navigate('profil'); closeDrawer()">
+        <span class="link-icon"><i class="fa-solid fa-gear"></i></span>
+        Paramètres
+      </a>
+    </div>
+
+    <button class="drawer-signout" onclick="closeDrawer(); doSignOut()">
+      <i class="fa-solid fa-right-from-bracket"></i> Se déconnecter
+    </button>
+  </div>
+
+</aside>
+
+<!-- ══ SCRIPTS GLOBAUX (non-module) ══ -->
+<script>
+  /* ── Navigation ── */
+  function navigate(page) {
+    const routes = {
+      creer:      'creer.html',
+      participer: 'participer.html',
+      'mes-rdv':  'mes-rdv.html',
+      profil:     'profil.html',
+    };
+    const url = routes[page];
+    if (url) window.location.href = url;
+  }
+
+  /* ── Sign out ── */
+  async function doSignOut() {
+    try {
+      const mod = await import('./supabaseClient.js');
+      const sb  = mod.supabase ?? mod.default;
+      if (sb) await sb.auth.signOut();
+    } catch (e) { console.warn('signOut error', e); }
+  }
+
+  /* ── Drawer toggle ── */
+  function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('menuToggle').addEventListener('click', openDrawer);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+</script>
+
+<!-- ══ CANVAS ANIMATIONS ══ -->
+<script>
+(function () {
+
+  /* ─── BACKGROUND (orbs flottants) ─── */
+  const bgCanvas = document.getElementById('bgCanvas');
+  const bctx = bgCanvas.getContext('2d');
+
+  function resizeBg() {
+    bgCanvas.width  = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+  }
+  resizeBg();
+  window.addEventListener('resize', resizeBg);
+
+  const orbs = Array.from({ length: 7 }, () => ({
+    x:     Math.random() * window.innerWidth,
+    y:     Math.random() * window.innerHeight,
+    r:     90 + Math.random() * 130,
+    vx:    (Math.random() - 0.5) * 0.25,
+    vy:    (Math.random() - 0.5) * 0.25,
+    hue:   248 + Math.random() * 28,
+    alpha: 0.03 + Math.random() * 0.04,
+  }));
+
+  function drawBg() {
+    bctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    orbs.forEach(orb => {
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+      if (orb.x < -orb.r) orb.x = bgCanvas.width  + orb.r;
+      if (orb.x > bgCanvas.width  + orb.r) orb.x = -orb.r;
+      if (orb.y < -orb.r) orb.y = bgCanvas.height + orb.r;
+      if (orb.y > bgCanvas.height + orb.r) orb.y = -orb.r;
+
+      const g = bctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
+      g.addColorStop(0, `hsla(${orb.hue}, 72%, 62%, ${orb.alpha})`);
+      g.addColorStop(1, 'transparent');
+      bctx.beginPath();
+      bctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+      bctx.fillStyle = g;
+      bctx.fill();
+    });
+    requestAnimationFrame(drawBg);
+  }
+  requestAnimationFrame(drawBg);
+
+  /* ─── NAV LOGO CANVAS (petit, toujours visible) ─── */
+  const navC   = document.getElementById('navLogoCanvas');
+  const navCtx = navC.getContext('2d');
+  const NW = navC.width;
+  const NH = navC.height;
+  const NCX = NW / 2;
+  const NCY = NH / 2;
+
+  const navLogoImg = new Image();
+  navLogoImg.src   = 'logo.png';
+
+  let navA1 = 0;
+  let navA2 = Math.PI;
+
+  const navParts = Array.from({ length: 6 }, (_, i) => ({
+    baseAngle: (i / 6) * Math.PI * 2,
+    orbitR:    14 + (i % 3) * 2,
+    size:      0.7 + (i % 2) * 0.5,
+    speed:     0.003 + (i % 3) * 0.001,
+    alpha:     0.4 + (i % 3) * 0.18,
+    offset:    Math.random() * Math.PI * 2,
+  }));
+
+  function drawNavLogo(ts = 0) {
+    navCtx.clearRect(0, 0, NW, NH);
+
+    const glow = navCtx.createRadialGradient(NCX, NCY, 1, NCX, NCY, 14);
+    glow.addColorStop(0, 'rgba(124,58,237,0.18)');
+    glow.addColorStop(1, 'transparent');
+    navCtx.beginPath();
+    navCtx.arc(NCX, NCY, 14, 0, Math.PI * 2);
+    navCtx.fillStyle = glow;
+    navCtx.fill();
+
+    navCtx.beginPath();
+    navCtx.arc(NCX, NCY, 17, 0, Math.PI * 2);
+    navCtx.strokeStyle = 'rgba(124,58,237,0.14)';
+    navCtx.lineWidth = 0.8;
+    navCtx.stroke();
+
+    navA1 += 0.014;
+    navA2 -= 0.009;
+
+    navCtx.beginPath();
+    navCtx.arc(NCX, NCY, 18, navA1, navA1 + Math.PI * 0.6);
+    navCtx.strokeStyle = 'rgba(124,58,237,0.65)';
+    navCtx.lineWidth = 1.8;
+    navCtx.lineCap = 'round';
+    navCtx.stroke();
+
+    navCtx.beginPath();
+    navCtx.arc(NCX, NCY, 15, navA2, navA2 + Math.PI * 1.2);
+    navCtx.strokeStyle = 'rgba(167,139,250,0.48)';
+    navCtx.lineWidth = 1.2;
+    navCtx.lineCap = 'round';
+    navCtx.stroke();
+
+    navParts.forEach(p => {
+      p.baseAngle += p.speed;
+      const a = p.baseAngle + p.offset;
+      const px = NCX + Math.cos(a) * p.orbitR;
+      const py = NCY + Math.sin(a) * p.orbitR;
+      navCtx.beginPath();
+      navCtx.arc(px, py, p.size, 0, Math.PI * 2);
+      navCtx.fillStyle = `rgba(124,58,237,${p.alpha})`;
+      navCtx.fill();
+    });
+
+    const IMG_SIZE = 18;
+    navCtx.save();
+    navCtx.shadowBlur  = 8;
+    navCtx.shadowColor = 'rgba(124,58,237,0.40)';
+    if (navLogoImg.complete && navLogoImg.naturalWidth > 0) {
+      navCtx.drawImage(navLogoImg, NCX - IMG_SIZE / 2, NCY - IMG_SIZE / 2, IMG_SIZE, IMG_SIZE);
+    } else {
+      navCtx.font = 'bold 15px system-ui, sans-serif';
+      navCtx.fillStyle = '#7c3aed';
+      navCtx.textAlign = 'center';
+      navCtx.textBaseline = 'middle';
+      navCtx.fillText('K', NCX, NCY);
+    }
+    navCtx.restore();
+
+    requestAnimationFrame(drawNavLogo);
+  }
+  requestAnimationFrame(drawNavLogo);
+
+  /* ─── HERO CANVAS (grand, landing page uniquement) ─── */
+  const lc  = document.getElementById('heroCanvas');
+  const ctx = lc.getContext('2d');
+  const W   = lc.width;
+  const H   = lc.height;
+  const CX  = W / 2;
+  const CY  = H / 2;
+
+  const logoImg = new Image();
+  logoImg.src   = 'logo.png';
+
+  const PART_COUNT = 10;
+  const parts = Array.from({ length: PART_COUNT }, (_, i) => ({
+    baseAngle: (i / PART_COUNT) * Math.PI * 2,
+    orbitR:    54 + (i % 3) * 7,
+    size:      1.6 + (i % 3) * 0.8,
+    speed:     0.0025 + (i % 4) * 0.001,
+    alpha:     0.5 + (i % 3) * 0.15,
+    offset:    Math.random() * Math.PI * 2,
+  }));
+
+  const ripples = [];
+  let rippleTimer = 0;
+  function addRipple(ts) {
+    ripples.push({ born: ts, r: 30, maxR: 72, alpha: 0.55 });
+  }
+
+  let arc1Angle = 0;
+  let arc2Angle = Math.PI;
+
+  function drawHero(ts = 0) {
+    ctx.clearRect(0, 0, W, H);
+
+    const glow = ctx.createRadialGradient(CX, CY, 4, CX, CY, 46);
+    glow.addColorStop(0, 'rgba(124,58,237,0.18)');
+    glow.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(CX, CY, 46, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, 44, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(124,58,237,0.16)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    arc1Angle += 0.012;
+    arc2Angle -= 0.008;
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, 56, arc1Angle, arc1Angle + Math.PI * 0.6);
+    ctx.strokeStyle = 'rgba(124,58,237,0.60)';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, 48, arc2Angle, arc2Angle + Math.PI * 1.2);
+    ctx.strokeStyle = 'rgba(167,139,250,0.42)';
+    ctx.lineWidth = 1.4;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.setLineDash([3, 7]);
+    ctx.beginPath();
+    ctx.arc(CX, CY, 63, arc1Angle * 0.5, arc1Angle * 0.5 + Math.PI * 1.8);
+    ctx.strokeStyle = 'rgba(124,58,237,0.22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.lineCap = 'butt';
+
+    if (ts - rippleTimer > 1800) { addRipple(ts); rippleTimer = ts; }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const rp = ripples[i];
+      const progress = (ts - rp.born) / 1400;
+      if (progress >= 1) { ripples.splice(i, 1); continue; }
+      const r = rp.r + (rp.maxR - rp.r) * progress;
+      const a = rp.alpha * (1 - progress);
+      ctx.beginPath();
+      ctx.arc(CX, CY, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(124,58,237,${a})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    parts.forEach(p => {
+      p.baseAngle += p.speed;
+      const a  = p.baseAngle + p.offset;
+      const px = CX + Math.cos(a) * p.orbitR;
+      const py = CY + Math.sin(a) * p.orbitR;
+      ctx.beginPath();
+      ctx.arc(px, py, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(124,58,237,${p.alpha})`;
+      ctx.fill();
+    });
+
+    const SIZE = 62;
+    ctx.save();
+    ctx.shadowBlur  = 18;
+    ctx.shadowColor = 'rgba(124,58,237,0.40)';
+    if (logoImg.complete && logoImg.naturalWidth > 0) {
+      ctx.drawImage(logoImg, CX - SIZE / 2, CY - SIZE / 2, SIZE, SIZE);
+    } else {
+      ctx.font = 'bold 46px system-ui, sans-serif';
+      ctx.fillStyle = '#7c3aed';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('K', CX, CY);
+    }
+    ctx.restore();
+
+    requestAnimationFrame(drawHero);
+  }
+  requestAnimationFrame(drawHero);
+
+})();
+</script>
+
+<!-- ══ AUTH MODULE ══ -->
+<script type="module" src="kagoul-auth.js"></script>
+
+<!-- ══ SESSION + AVATAR MODULE ══ -->
+<script type="module">
+  /*
+    MIGRATION SUPABASE (exécuter dans l'éditeur SQL une seule fois) :
+    ALTER TABLE k_profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+    Bucket Supabase Storage :
+    - Nom : avatars
+    - Accès : public
+    - Policies : allow authenticated users to upload to their own folder (user_id/*)
+  */
+
+  import { supabase } from './supabaseClient.js';
+
+  let currentUserId  = null;
+  let currentPseudo  = null;
+  let currentAvatar  = null;
+
+  /* ── fetchProfile : récupère pseudo + avatar_url ── */
+  async function fetchProfile(userId) {
+    try {
+      const { data } = await supabase
+        .from('k_profiles')
+        .select('pseudo, avatar_url')
+        .eq('user_id', userId)
+        .maybeSingle();
+      return data ?? null;
+    } catch (_) { return null; }
+  }
+
+  /* ── Mise à jour de l'UI avatar dans le drawer ── */
+  function updateAvatarUI(avatarUrl, pseudo) {
+    const el = document.getElementById('drawerAvatarEl');
+    if (!el) return;
+    if (avatarUrl) {
+      el.innerHTML = `<img src="${avatarUrl}?t=${Date.now()}" alt="Avatar" />`;
+    } else {
+      el.textContent = (pseudo?.[0] || '?').toUpperCase();
+    }
+  }
+
+  /* ── Passer en état connecté ── */
+  function setAuthed(user, profile) {
+    currentUserId = user?.id ?? null;
+    currentPseudo = profile?.pseudo || user?.email?.split('@')[0] || '—';
+    currentAvatar = profile?.avatar_url ?? null;
+
+    document.body.classList.replace('state-gate', 'state-authed');
+
+    const drawerPseudo = document.getElementById('drawerPseudoEl');
+    if (drawerPseudo) drawerPseudo.textContent = currentPseudo;
+
+    updateAvatarUI(currentAvatar, currentPseudo);
+  }
+
+  /* ── Passer en état déconnecté ── */
+  function setGate() {
+    currentUserId = null;
+    currentPseudo = null;
+    currentAvatar = null;
+    document.body.classList.replace('state-authed', 'state-gate');
+  }
+
+  /* ── Upload avatar vers bucket 'avatars' ── */
+  document.getElementById('avatarFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUserId) return;
+
+    const statusEl = document.getElementById('drawerUploadStatus');
+    const setStatus = (msg, isErr = false) => {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+      statusEl.style.color = isErr ? '#e05555' : '#7c3aed';
+    };
+
+    if (file.size > 3 * 1024 * 1024) {
+      setStatus('Fichier trop lourd (max 3 Mo)', true);
+      e.target.value = '';
+      return;
+    }
+
+    setStatus('Upload en cours…');
+
+    try {
+      const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${currentUserId}/avatar.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('k-avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (upErr) throw upErr;
+
+      const { data: urlData } = supabase.storage
+        .from('k-avatars')
+        .getPublicUrl(path);
+
+      const avatarUrl = urlData.publicUrl;
+
+      const { error: dbErr } = await supabase
+        .from('k_profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('user_id', currentUserId);
+
+      if (dbErr) throw dbErr;
+
+      currentAvatar = avatarUrl;
+      updateAvatarUI(avatarUrl, currentPseudo);
+      setStatus('Photo mise à jour ✓');
+      setTimeout(() => setStatus(''), 3000);
+
+    } catch (err) {
+      console.error('Avatar upload error', err);
+      setStatus('Erreur lors de l\'upload', true);
+      setTimeout(() => setStatus(''), 3500);
+    }
+
+    e.target.value = '';
+  });
+
+  /* ── Vérification session initiale ── */
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const profile = await fetchProfile(session.user.id);
+      setAuthed(session.user, profile);
+    }
+  } catch (e) { console.warn('session check', e); }
+
+  /* ── Listener changements d'état auth ── */
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      const profile = await fetchProfile(session.user.id);
+      setAuthed(session.user, profile);
+    }
+    if (event === 'SIGNED_OUT') setGate();
+  });
+</script>
+
+</body>
+</html>
