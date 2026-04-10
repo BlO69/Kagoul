@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Kagoul — Créer un rendez-vous</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:         #0c0e13;
+      --surface:    #13161e;
+      --surface2:   #1a1e29;
+      --border:     rgba(255,255,255,0.07);
+      --border2:    rgba(255,255,255,0.12);
+      --purple:     #7c3aed;
+      --purple-h:   #6d28d9;
+      --purple-lt:  rgba(124,58,237,0.10);
+      --purple-dim: rgba(124,58,237,0.35);
+      --text:       #f0ece4;
+      --muted:      #7a7d8a;
+      --muted2:     #4a4d5a;
+      --error:      #e05555;
+      --success:    #3ecf8e;
+      --radius:     14px;
+      --radius-s:   9px;
+      --font-d: 'Cormorant Garamond', Georgia, serif;
+      --font-b: 'DM Sans', system-ui, sans-serif;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: var(--font-b); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+    /* ── NAV ── */
+    nav { position:sticky;top:0;z-index:100;background:rgba(12,14,19,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);height:56px; }
+    .nav-left { display:flex;align-items:center;gap:14px; }
+    .nav-back { width:32px;height:32px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:12px;text-decoration:none;transition:all .2s; }
+    .nav-back:hover { color:var(--purple);border-color:var(--purple-dim);background:var(--purple-lt); }
+    .nav-logo { display:flex;align-items:center;gap:8px;text-decoration:none; }
+    #navLogoCanvas { display:block;filter:drop-shadow(0 0 6px rgba(124,58,237,0.28)); }
+    .nav-logo-text { font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--text); }
+    .nav-logo-text em { color:var(--purple);font-style:normal; }
+    .nav-tag { font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase; }
+
+    /* ── LAYOUT ── */
+    .page { max-width:620px;margin:0 auto;padding:clamp(24px,4vw,48px) clamp(16px,4vw,24px) 80px;display:flex;flex-direction:column;gap:10px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:6px; }
+    .page-header h1 { font-family:var(--font-d);font-size:clamp(26px,5vw,36px);font-weight:500;line-height:1.1;letter-spacing:-.01em; }
+    .page-header h1 span { color:var(--purple);font-style:italic; }
+    .page-header p { margin-top:7px;font-size:12px;color:var(--muted);font-weight:300; }
+
+    /* ── SECTION ── */
+    .section { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s; }
+    .section-header { display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:border-color .2s; }
+    .section.open .section-header { border-bottom-color:var(--border); }
+    .section-header:hover .section-title { color:var(--purple); }
+    .section-num { font-family:var(--font-d);font-size:11px;font-weight:600;color:var(--purple);letter-spacing:.1em;text-transform:uppercase;min-width:18px; }
+    .section-title { font-size:13px;font-weight:600;color:var(--text);flex:1;transition:color .15s;letter-spacing:.01em; }
+    .section-caret { color:var(--muted2);font-size:10px;transition:transform .25s; }
+    .section.open .section-caret { transform:rotate(180deg); }
+    .section-body { display:none;padding:18px;flex-direction:column;gap:14px;animation:fadeIn .2s ease; }
+    .section.open .section-body { display:flex; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+
+    /* ── FIELDS ── */
+    .field { display:flex;flex-direction:column;gap:5px; }
+    .field-row { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+    .field-row-3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px; }
+    @media(max-width:520px){.field-row,.field-row-3{grid-template-columns:1fr}}
+    .field-label { font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:5px; }
+    .field-label .req { color:var(--purple); }
+    .field-label .hint { color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto;font-size:10px; }
+
+    input[type=text],input[type=date],input[type=time],input[type=number],select,textarea {
+      width:100%;padding:9px 13px;border:1px solid var(--border2);border-radius:var(--radius-s);background:var(--surface2);color:var(--text);font-family:var(--font-b);font-size:13px;transition:border-color .15s,box-shadow .15s;outline:none;-webkit-appearance:none;
+    }
+    input:focus,select:focus,textarea:focus { border-color:var(--purple-dim);box-shadow:0 0 0 3px var(--purple-lt); }
+    input::placeholder,textarea::placeholder { color:var(--muted2); }
+    textarea { resize:vertical;min-height:76px; }
+    select { cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7d8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:32px; }
+    select:disabled { opacity:.45;cursor:not-allowed; }
+    select option { background:#1a1e29; }
+    .char-counter { text-align:right;font-size:10px;color:var(--muted2); }
+    .char-counter.warn { color:#f59e0b; }
+    .char-counter.over { color:var(--error); }
+
+    /* ── FEE FIELD ── */
+    .fee-input-wrap { position:relative; }
+    .fee-input-wrap input { padding-left:42px; }
+    .fee-currency { position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;font-weight:600; }
+    .fee-note { margin-top:4px;padding:8px 11px;border-radius:var(--radius-s);background:var(--purple-lt);border:1px solid var(--purple-dim);font-size:10.5px;color:rgba(124,58,237,0.85);line-height:1.6; }
+    .fee-note strong { color:var(--purple); }
+
+    /* ── MULTI-SELECT ── */
+    .multi-select { position:relative; }
+    .ms-trigger { display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-height:40px;padding:6px 34px 6px 10px;border:1px solid var(--border2);border-radius:var(--radius-s);background:var(--surface2);cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative; }
+    .ms-trigger:hover { border-color:var(--purple-dim); }
+    .ms-trigger.open { border-color:var(--purple-dim);box-shadow:0 0 0 3px var(--purple-lt); }
+    .ms-trigger::after { content:'';position:absolute;right:11px;top:50%;transform:translateY(-50%);width:10px;height:6px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7d8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;transition:transform .2s;pointer-events:none; }
+    .ms-trigger.open::after { transform:translateY(-50%) rotate(180deg); }
+    .ms-placeholder { font-size:13px;color:var(--muted2);pointer-events:none; }
+    .ms-tag { display:inline-flex;align-items:center;gap:4px;background:var(--purple-lt);border:1px solid var(--purple-dim);color:var(--purple);font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;white-space:nowrap; }
+    .ms-tag-rm { cursor:pointer;opacity:.6;font-size:9px;transition:opacity .15s; }
+    .ms-tag-rm:hover { opacity:1; }
+    .ms-dropdown { display:none;position:absolute;top:calc(100% + 5px);left:0;right:0;background:#1c2030;border:1px solid var(--border2);border-radius:var(--radius-s);z-index:200;max-height:260px;overflow-y:auto;box-shadow:0 16px 40px rgba(0,0,0,.55); }
+    .ms-dropdown.show { display:block; }
+    .ms-search { padding:8px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#1c2030; }
+    .ms-search input { border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:12px;background:var(--surface2); }
+    .ms-group-label { padding:8px 12px 3px;font-size:9px;font-weight:700;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase; }
+    .ms-option { display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;font-size:12px;color:var(--muted);transition:background .1s,color .1s; }
+    .ms-option:hover { background:var(--purple-lt);color:var(--text); }
+    .ms-option.selected { color:var(--purple); }
+    .ms-chk { width:14px;height:14px;flex-shrink:0;border-radius:3px;border:1.5px solid var(--muted2);display:flex;align-items:center;justify-content:center;font-size:8px;transition:all .15s; }
+    .ms-option.selected .ms-chk { background:var(--purple);border-color:var(--purple);color:#fff; }
+    .ms-dropdown::-webkit-scrollbar { width:4px; }
+    .ms-dropdown::-webkit-scrollbar-thumb { background:var(--border2);border-radius:2px; }
+
+    /* ── BOXES ── */
+    .info-box { display:flex;gap:9px;padding:10px 13px;border-radius:var(--radius-s);background:var(--purple-lt);border:1px solid var(--purple-dim);font-size:11px;color:rgba(167,139,250,0.9);line-height:1.6; }
+    .warn-box { display:flex;gap:9px;padding:10px 13px;border-radius:var(--radius-s);background:rgba(224,85,85,.07);border:1px solid rgba(224,85,85,.22);font-size:11px;color:#e08888;line-height:1.6; }
+
+    /* ── CONSENT ── */
+    .consent-item { display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border-radius:var(--radius-s);border:1.5px solid var(--border2);cursor:pointer;transition:border-color .15s,background .15s;font-size:12px;color:var(--muted);line-height:1.5; }
+    .consent-item:hover { border-color:var(--purple-dim); }
+    .consent-item.checked { border-color:var(--success);background:rgba(62,207,142,.05);color:var(--text); }
+    .consent-item input[type=checkbox] { display:none; }
+    .consent-box { width:18px;height:18px;flex-shrink:0;border-radius:4px;border:1.5px solid var(--muted2);display:flex;align-items:center;justify-content:center;font-size:9px;margin-top:1px;transition:all .15s; }
+    .consent-item.checked .consent-box { background:var(--success);border-color:var(--success);color:#0c0e13; }
+    .consent-text strong { color:var(--text);font-weight:600; }
+
+    /* ── BUTTONS ── */
+    .submit-wrap { padding-top:6px;display:flex;flex-direction:column;gap:8px; }
+    .btn-primary { width:100%;padding:13px 24px;border-radius:var(--radius-s);background:var(--purple);color:#fff;border:none;font-family:var(--font-b);font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s,box-shadow .15s; }
+    .btn-primary:hover { background:var(--purple-h);box-shadow:0 6px 22px rgba(124,58,237,.38); }
+    .btn-primary:active { transform:scale(0.985); }
+    .btn-primary:disabled { opacity:.5;cursor:not-allowed; }
+    .btn-ghost { width:100%;padding:11px 24px;border-radius:var(--radius-s);background:transparent;color:var(--muted);border:1px solid var(--border2);font-family:var(--font-b);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s; }
+    .btn-ghost:hover { color:var(--text);background:var(--surface2); }
+
+    /* ── MSG ── */
+    #globalMsg { padding:12px 15px;border-radius:var(--radius-s);font-size:13px;font-weight:500;display:none; }
+    #globalMsg.ok  { display:block;background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3);color:var(--success); }
+    #globalMsg.err { display:block;background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.3);color:var(--error); }
+
+    /* ── PROGRESS ── */
+    .progress { display:flex;gap:3px;padding:0 0 18px; }
+    .prog-step { flex:1;height:2px;border-radius:2px;background:var(--surface2); }
+    .prog-step.done { background:var(--purple); }
+
+    /* ── LOCATION SKELETON ── */
+    .location-skeleton { display:flex;flex-direction:column;gap:10px; }
+    .skeleton-line { height:38px;border-radius:var(--radius-s);background:linear-gradient(90deg,var(--surface2) 25%,rgba(255,255,255,0.04) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a class="nav-back" href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+    <a class="nav-logo" href="index.html">
+      <canvas id="navLogoCanvas" width="30" height="30"></canvas>
+      <span class="nav-logo-text"><em>Kagoul</em></span>
+    </a>
+  </div>
+  <span class="nav-tag">Nouveau rendez-vous</span>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <h1>Créer un <span>rendez-vous</span></h1>
+    <p>Complète les sections ci-dessous — les champs marqués <span style="color:var(--purple)">*</span> sont obligatoires.</p>
+  </div>
+
+  <div class="progress">
+    <div class="prog-step done"></div>
+    <div class="prog-step done"></div>
+    <div class="prog-step done"></div>
+    <div class="prog-step done"></div>
+    <div class="prog-step done"></div>
+    <div class="prog-step done"></div>
+  </div>
+
+  <div id="globalMsg"></div>
+
+  <!-- ══ 01 INFORMATIONS GÉNÉRALES ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">01</span>
+      <span class="section-title">Informations générales</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+
+      <div class="field">
+        <label class="field-label">Titre <span class="req">*</span></label>
+        <input type="text" id="rdvTitle" maxlength="80" placeholder="Ex : Soirée décontractée Cap-Haïtien…" oninput="updateCounter('rdvTitle','titleCounter',80)" />
+        <div class="char-counter" id="titleCounter">0 / 80</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Type de rencontre <span class="req">*</span></label>
+          <select id="rdvType">
+            <option value="solo">Solo</option>
+            <option value="couple">Couple</option>
+            <option value="groupe">Groupe</option>
+            <option value="soiree">Soirée privée</option>
+            <option value="cuckold">Cuckold / Vixen</option>
+            <option value="hotwife">Hotwife / Bull</option>
+            <option value="echangiste">Couple échangiste</option>
+            <option value="gangbang">Gang Bang</option>
+            <option value="bdsm_session">Session BDSM</option>
+            <option value="libertinage">Soirée libertine</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Lieu</label>
+          <select id="rdvVenue">
+            <option value="prive">Domicile / Privé</option>
+            <option value="hotel">Hôtel</option>
+            <option value="public">Lieu public</option>
+            <option value="a_definir">À définir ensemble</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Description <span class="req">*</span></label>
+        <textarea id="rdvDesc" maxlength="500" placeholder="Décris l'ambiance, tes attentes…" oninput="updateCounter('rdvDesc','descCounter',500)"></textarea>
+        <div class="char-counter" id="descCounter">0 / 500</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Date <span class="req">*</span></label>
+          <input type="date" id="rdvDate" />
+        </div>
+        <div class="field">
+          <label class="field-label">Heure <span class="req">*</span></label>
+          <input type="time" id="rdvTime" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Durée estimée</label>
+          <select id="rdvDuration">
+            <option value="">Non précisée</option>
+            <option value="1h">~1 h</option>
+            <option value="2h">~2 h</option>
+            <option value="3h">~3 h</option>
+            <option value="4h+">4 h+</option>
+            <option value="nuit">Toute la nuit</option>
+            <option value="journee">Toute la journée</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Places disponibles <span class="req">*</span></label>
+          <input type="number" id="rdvSlots" min="1" max="50" value="1" />
+        </div>
+      </div>
+
+      <!-- ── VILLE / ZONE : cascading selects via JSON ── -->
+      <div class="field">
+        <label class="field-label">Pays <span class="req">*</span></label>
+        <select id="rdvPays" onchange="onPaysChange()">
+          <option value="">— Sélectionner un pays —</option>
+          <option value="HT">🇭🇹 Haïti</option>
+          <option value="DO">🇩🇴 République Dominicaine</option>
+        </select>
+      </div>
+
+      <div class="field-row" id="locationLevel2Wrap" style="display:none">
+        <div class="field" id="deptWrap">
+          <label class="field-label" id="deptLabel">Département</label>
+          <select id="rdvDept" onchange="onDeptChange()" disabled>
+            <option value="">— Chargement… —</option>
+          </select>
+        </div>
+        <div class="field" id="arrWrap">
+          <!-- Arrondissement (Haïti only) — masqué pour RepDom -->
+          <label class="field-label">Arrondissement</label>
+          <select id="rdvArr" onchange="onArrChange()" disabled>
+            <option value="">— d'abord le département —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field" id="communeWrap" style="display:none">
+        <label class="field-label" id="communeLabel">Commune / Ville <span class="req">*</span></label>
+        <select id="rdvCity" disabled>
+          <option value="">— d'abord l'arrondissement —</option>
+        </select>
+      </div>
+
+      <!-- ── DRESS CODE ── -->
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Dress code</label>
+          <select id="rdvDress">
+            <option value="">Aucun / Libre</option>
+            <option value="cagoule">🎭 Avec cagoule</option>
+            <option value="mardi_gras">🎉 Mardi Gras</option>
+            <option value="masque">😷 Masqué·e</option>
+            <option value="cosplay">🦸 Cosplay</option>
+            <option value="secretaire_patron">👔 Secrétaire &amp; Patron</option>
+            <option value="femme_menage">🧹 Femme de ménage</option>
+            <option value="prisonnier">🔒 Prisonnier·ère</option>
+            <option value="policier">👮 Policier·ère</option>
+            <option value="medecin">🩺 Médecin / Infirmier·ère</option>
+            <option value="bandit">🔫 Bandit de grand chemin</option>
+            <option value="latex">🖤 Latex / Cuir</option>
+            <option value="lingerie">💋 Lingerie</option>
+            <option value="tenue_soiree">✨ Tenue de soirée</option>
+            <option value="casual">👕 Casual / Décontracté</option>
+            <option value="autre">⭐ Autre (préciser dans les règles)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Frais de participation <span class="hint">HTG / DOP</span></label>
+          <div class="fee-input-wrap">
+            <span class="fee-currency">$</span>
+            <input type="number" id="rdvFee" min="0" step="50" value="0" placeholder="0 = gratuit" />
+          </div>
+          <p class="fee-note">
+            <strong>Créateur·rice :</strong> ajoute <strong>+10 %</strong> à ton tarif pour couvrir les frais système, plus les <strong>frais de transfert</strong> selon la méthode de paiement (MonCash, Zelle, etc.).
+          </p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <i class="fa-solid fa-clock fa-sm" style="margin-top:2px;flex-shrink:0"></i>
+        <span>Ce rendez-vous sera automatiquement <strong>supprimé après 72 h</strong>.</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ 02 À PROPOS DE TOI ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">02</span>
+      <span class="section-title">À propos de toi</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Genre <span class="req">*</span></label>
+          <select id="creatorGender">
+            <option value="homme">Homme</option>
+            <option value="femme">Femme</option>
+            <option value="non_binaire">Non-binaire</option>
+            <option value="couple">Couple</option>
+            <option value="groupe">Groupe</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Orientation</label>
+          <select id="creatorOrientation">
+            <option value="hetero">Hétérosexuel·le</option>
+            <option value="gay_lesbienne">Gay / Lesbienne</option>
+            <option value="bisexuel">Bisexuel·le</option>
+            <option value="pansexuel">Pansexuel·le</option>
+            <option value="autre">Autre</option>
+            <option value="non_precise">Non précisé</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Rôle / Dynamique</label>
+          <select id="creatorRole">
+            <option value="aucun">Aucune en particulier</option>
+            <option value="dominant">Dominant·e</option>
+            <option value="soumis">Soumis·e</option>
+            <option value="switch">Switch</option>
+            <option value="cuckold">Cuckold</option>
+            <option value="vixen">Vixen</option>
+            <option value="hotwife">Hotwife</option>
+            <option value="bull">Bull</option>
+            <option value="candauliste">Candauliste</option>
+            <option value="voyeur">Voyeur·se</option>
+            <option value="exhib">Exhib</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Expérience</label>
+          <select id="creatorExp">
+            <option value="curieux">Curieux·se</option>
+            <option value="debutant">Débutant·e</option>
+            <option value="experimente">Expérimenté·e</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Nb. de personnes présentes</label>
+          <input type="number" id="creatorCount" min="1" max="20" value="1" />
+        </div>
+        <div class="field">
+          <label class="field-label">Description physique <span class="hint">Optionnel</span></label>
+          <input type="text" id="creatorDesc" maxlength="120" placeholder="35 ans, brun, 1m80…" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 03 CE QUE TU CHERCHES ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">03</span>
+      <span class="section-title">Ce que tu cherches</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Profil recherché <span class="req">*</span></label>
+          <select id="seekGender">
+            <option value="femme">Femme</option>
+            <option value="homme">Homme</option>
+            <option value="couple">Couple</option>
+            <option value="groupe">Groupe</option>
+            <option value="tous">Tous</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Type de relation</label>
+          <select id="seekRelType">
+            <option value="fun">Fun / Sans lendemain</option>
+            <option value="regulier">Régulier</option>
+            <option value="experimentation">Expérimentation</option>
+            <option value="relation_ouverte">Relation ouverte</option>
+            <option value="echangisme">Échangisme</option>
+            <option value="cuckold_vixen">Cuckold / Vixen</option>
+            <option value="bdsm_regulier">Partenaire BDSM</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Âge min <span class="hint">18+</span></label>
+          <input type="number" id="seekAgeMin" min="18" max="99" value="18" />
+        </div>
+        <div class="field">
+          <label class="field-label">Âge max</label>
+          <input type="number" id="seekAgeMax" min="18" max="99" value="55" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Nombre de participants souhaités</label>
+        <select id="seekCountRange">
+          <option value="1">1 personne</option>
+          <option value="2">2 personnes</option>
+          <option value="3">3 personnes</option>
+          <option value="4">4 personnes</option>
+          <option value="5">5 personnes</option>
+          <option value="6">6+ personnes</option>
+          <option value="10">10+ personnes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 04 PRATIQUES & LIMITES ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">04</span>
+      <span class="section-title">Pratiques & limites</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+
+      <div class="field">
+        <label class="field-label">Pratiques acceptées <span class="hint">Choix multiple</span></label>
+        <div class="multi-select" id="ms-practices">
+          <div class="ms-trigger" onclick="toggleMS('ms-practices')">
+            <span class="ms-placeholder">Sélectionner des pratiques…</span>
+          </div>
+          <div class="ms-dropdown">
+            <div class="ms-search"><input type="text" placeholder="Rechercher une pratique…" oninput="filterMS('ms-practices',this.value)" /></div>
+            <div class="ms-group-label">Dynamiques & fantasmes</div>
+            <div class="ms-option" data-value="voyeurisme"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Voyeurisme</div>
+            <div class="ms-option" data-value="exhib"             onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Exhibitionnisme</div>
+            <div class="ms-option" data-value="roleplay"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Role play</div>
+            <div class="ms-option" data-value="cuckold"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Cuckold</div>
+            <div class="ms-option" data-value="vixen"             onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Vixen</div>
+            <div class="ms-option" data-value="hotwife"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Hotwife</div>
+            <div class="ms-option" data-value="candaulisme"       onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Candaulisme</div>
+            <div class="ms-option" data-value="echangisme"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Échangisme</div>
+            <div class="ms-option" data-value="trio_mfm"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Trio H+H+F</div>
+            <div class="ms-option" data-value="trio_fmf"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Trio F+H+F</div>
+            <div class="ms-option" data-value="gangbang"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Gang Bang</div>
+            <div class="ms-option" data-value="orgie"             onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Orgie / Partouze</div>
+            <div class="ms-option" data-value="dirty_talk"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Dirty talk</div>
+            <div class="ms-option" data-value="tantrique"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Tantrique</div>
+            <div class="ms-option" data-value="massage_sensuel"   onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Massage sensuel</div>
+            <div class="ms-option" data-value="sexe_semi_public"  onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Sexe semi-public</div>
+            <div class="ms-group-label">BDSM & jeux de pouvoir</div>
+            <div class="ms-option" data-value="bdsm_leger"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>BDSM léger</div>
+            <div class="ms-option" data-value="bdsm_intense"      onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>BDSM intense</div>
+            <div class="ms-option" data-value="domination"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Domination</div>
+            <div class="ms-option" data-value="soumission"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Soumission</div>
+            <div class="ms-option" data-value="bondage"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Bondage</div>
+            <div class="ms-option" data-value="shibari"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Shibari</div>
+            <div class="ms-option" data-value="menottage"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Menottage</div>
+            <div class="ms-option" data-value="blindfold"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Blindfold</div>
+            <div class="ms-option" data-value="spanking"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Spanking / Fessée</div>
+            <div class="ms-option" data-value="impact_play"       onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Impact play</div>
+            <div class="ms-option" data-value="wax_play"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Wax play</div>
+            <div class="ms-option" data-value="humiliation"       onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Humiliation consentie</div>
+            <div class="ms-option" data-value="cnc"               onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>CNC (consensuel)</div>
+            <div class="ms-option" data-value="petplay"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Pet play</div>
+            <div class="ms-option" data-value="edgeplay"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Edge play</div>
+            <div class="ms-group-label">Sextoys & accessoires</div>
+            <div class="ms-option" data-value="sextoys_general"   onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Sextoys (général)</div>
+            <div class="ms-option" data-value="vibromasseur"      onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Vibromasseur</div>
+            <div class="ms-option" data-value="gode"              onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Gode / Dildo</div>
+            <div class="ms-option" data-value="gode_ceinture"     onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Gode-ceinture</div>
+            <div class="ms-option" data-value="plug_anal"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Plug anal</div>
+            <div class="ms-option" data-value="cage_chastete"     onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Cage chasteté</div>
+            <div class="ms-option" data-value="collier_laisse"    onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Collier / Laisse</div>
+            <div class="ms-option" data-value="jouets_telecom"    onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Jouets télécommandés</div>
+            <div class="ms-option" data-value="machine_sexuelle"  onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Machine sexuelle</div>
+            <div class="ms-option" data-value="electrostim"       onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Électrostim</div>
+            <div class="ms-group-label">Pratiques sexuelles</div>
+            <div class="ms-option" data-value="sexe_oral"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Sexe oral</div>
+            <div class="ms-option" data-value="69"                onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>69</div>
+            <div class="ms-option" data-value="anulingus"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Anulingus / Rimming</div>
+            <div class="ms-option" data-value="face_sitting"      onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Face sitting</div>
+            <div class="ms-option" data-value="deepthroat"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Deep throat</div>
+            <div class="ms-option" data-value="sexe_anal"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Sexe anal</div>
+            <div class="ms-option" data-value="double_penetration" onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Double pénétration</div>
+            <div class="ms-option" data-value="pegging"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Pegging</div>
+            <div class="ms-option" data-value="fisting"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Fisting</div>
+            <div class="ms-option" data-value="squirting"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Squirting</div>
+            <div class="ms-option" data-value="creampie"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Creampie</div>
+            <div class="ms-option" data-value="facial"            onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Facial</div>
+            <div class="ms-option" data-value="masturbation_mutuelle" onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Masturbation mutuelle</div>
+            <div class="ms-option" data-value="footjob"           onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Foot job / Fetish pieds</div>
+            <div class="ms-group-label">Fetishes & spécifique</div>
+            <div class="ms-option" data-value="lingerie"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Lingerie / Tenue sexy</div>
+            <div class="ms-option" data-value="latex_cuir"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Latex / Cuir</div>
+            <div class="ms-option" data-value="uniforme"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Uniformes / Costumes</div>
+            <div class="ms-option" data-value="striptease"        onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Striptease</div>
+            <div class="ms-option" data-value="urophilie"         onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Urophilie</div>
+            <div class="ms-option" data-value="breeding"          onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Breeding fantasy</div>
+            <div class="ms-option" data-value="photo_video"       onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Photos / Vidéos (consenties)</div>
+            <div class="ms-option" data-value="sexting_live"      onclick="selectMS('ms-practices',this)"><span class="ms-chk"><i class="fa-solid fa-check" style="font-size:7px"></i></span>Sexting / Live cam</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Pratiques refusées <span class="hint">Important</span></label>
+        <textarea id="practicesRefused" maxlength="300" placeholder="Ex : pas de BDSM intense, pas de vidéo…" oninput="updateCounter('practicesRefused','refusedCounter',300)"></textarea>
+        <div class="char-counter" id="refusedCounter">0 / 300</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Fantasmes <span class="hint">Optionnel</span></label>
+        <textarea id="fantasmes" maxlength="400" placeholder="Décris librement tes fantasmes pour cette rencontre…" oninput="updateCounter('fantasmes','fantasmesCounter',400)"></textarea>
+        <div class="char-counter" id="fantasmesCounter">0 / 400</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Règles personnelles</label>
+        <textarea id="rdvRules" maxlength="300" placeholder="Discrétion, hygiène, conditions spécifiques…" oninput="updateCounter('rdvRules','rulesCounter',300)"></textarea>
+        <div class="char-counter" id="rulesCounter">0 / 300</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Alcool / substances</label>
+          <select id="rdvSubstances">
+            <option value="non">Non — aucune</option>
+            <option value="alcool_ok">Alcool OK</option>
+            <option value="non_precisé">Non précisé</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Protection</label>
+          <select id="rdvProtection">
+            <option value="oui">Préservatif obligatoire</option>
+            <option value="discuter">À discuter</option>
+            <option value="non_precisé">Non précisé</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Test IST</label>
+        <select id="rdvIST">
+          <option value="non_demande">Non demandé</option>
+          <option value="demande">Demandé (résultats récents)</option>
+          <option value="sur_demande">Sur demande uniquement</option>
+        </select>
+      </div>
+
+      <div class="warn-box">
+        <i class="fa-solid fa-triangle-exclamation fa-sm" style="margin-top:2px;flex-shrink:0"></i>
+        <span>Toute demande d'argent hors plateforme, coercition ou contenu illégal entraîne la <strong>suppression immédiate du compte</strong>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 05 VISIBILITÉ ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">05</span>
+      <span class="section-title">Visibilité & sécurité</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Visibilité</label>
+          <select id="rdvVisibility">
+            <option value="public">Public</option>
+            <option value="prive">Privé (sur invitation)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Validation</label>
+          <select id="rdvApproval">
+            <option value="auto">Automatique</option>
+            <option value="manuel">Validation manuelle</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Masquer mes photos dans ce RDV</label>
+        <select id="hidePhotos">
+          <option value="non">Non</option>
+          <option value="oui">Oui — masquer</option>
+        </select>
+      </div>
+      <div class="info-box">
+        <i class="fa-solid fa-shield-halved fa-sm" style="margin-top:2px;flex-shrink:0"></i>
+        <span>Ton adresse exacte et informations personnelles ne sont <strong>jamais partagées</strong> avant ton accord explicite.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 06 CONSENTEMENT ══ -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">06</span>
+      <span class="section-title">Confirmation & consentement</span>
+      <i class="fa-solid fa-chevron-down section-caret"></i>
+    </div>
+    <div class="section-body">
+      <label class="consent-item" id="c1" onclick="toggleConsent(this)">
+        <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:8px"></i></div>
+        <div class="consent-text"><strong>Je certifie avoir au moins 18 ans</strong> et que toutes les personnes concernées sont majeures.</div>
+      </label>
+      <label class="consent-item" id="c2" onclick="toggleConsent(this)">
+        <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:8px"></i></div>
+        <div class="consent-text"><strong>Je consens librement</strong> à organiser cette rencontre et respecterai le droit de chaque participant de se retirer à tout moment.</div>
+      </label>
+      <label class="consent-item" id="c3" onclick="toggleConsent(this)">
+        <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:8px"></i></div>
+        <div class="consent-text"><strong>Je respecte les CGU de Kagoul</strong> : pas de coercition, pas de prostitution, pas de contenu illégal, pas de mineurs.</div>
+      </label>
+      <label class="consent-item" id="c4" onclick="toggleConsent(this)">
+        <input type="checkbox" /><div class="consent-box"><i class="fa-solid fa-check" style="font-size:8px"></i></div>
+        <div class="consent-text"><strong>Je comprends les risques</strong> liés aux rencontres entre inconnus et j'assume ma responsabilité.</div>
+      </label>
+      <div class="submit-wrap">
+        <button class="btn-primary" id="submitBtn" onclick="submitRdv()">
+          <i class="fa-solid fa-paper-plane"></i> Publier le rendez-vous
+        </button>
+        <button class="btn-ghost" onclick="window.history.back()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<!-- ══ AUTH CHECK ══ -->
+<script type="module">
+  import { supabase } from './supabaseClient.js';
+  window._supabase = supabase;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) { alert('Tu dois être connecté·e pour créer un rendez-vous.'); window.location.href = 'index.html'; }
+  window._currentUser = session.user;
+</script>
+
+<!-- ══ NAV LOGO CANVAS ══ -->
+<script>
+(function () {
+  const canvas = document.getElementById('navLogoCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H / 2;
+
+  const IMG_SIZE = 18;
+  let arc1 = 0, arc2 = Math.PI;
+  const logoImg = new Image();
+  logoImg.src = 'logo.png';
+
+  function draw(ts = 0) {
+    ctx.clearRect(0, 0, W, H);
+    arc1 += 0.018; arc2 -= 0.012;
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, 13, arc1, arc1 + Math.PI * 0.7);
+    ctx.strokeStyle = 'rgba(124,58,237,0.7)';
+    ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, 10, arc2, arc2 + Math.PI * 1.1);
+    ctx.strokeStyle = 'rgba(167,139,250,0.4)';
+    ctx.lineWidth = 1.2; ctx.lineCap = 'round'; ctx.stroke();
+
+    ctx.save();
+    ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(124,58,237,0.4)';
+    if (logoImg.complete && logoImg.naturalWidth > 0) {
+      ctx.drawImage(logoImg, CX - IMG_SIZE / 2, CY - IMG_SIZE / 2, IMG_SIZE, IMG_SIZE);
+    } else {
+      ctx.font = 'bold 13px system-ui,sans-serif';
+      ctx.fillStyle = '#7c3aed';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('K', CX, CY);
+    }
+    ctx.restore();
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+
+<!-- ══ LOCATION (fetch JSON) ══ -->
+<script>
+/* Cache les données JSON après premier chargement */
+let _geoData = { HT: null, DO: null };
+
+async function loadGeoData(code) {
+  if (_geoData[code]) return _geoData[code];
+  const file = code === 'HT' ? 'haiti.json' : 'repdom.json';
+  try {
+    const r = await fetch(file);
+    _geoData[code] = await r.json();
+    return _geoData[code];
+  } catch (e) {
+    console.error('Impossible de charger', file, e);
+    return null;
+  }
+}
+
+function fillSelect(sel, options, placeholder) {
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.value; opt.textContent = o.label;
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+}
+
+function resetSelect(sel, placeholder) {
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  sel.disabled = true;
+}
+
+async function onPaysChange() {
+  const pays = document.getElementById('rdvPays').value;
+  const level2 = document.getElementById('locationLevel2Wrap');
+  const arrWrap = document.getElementById('arrWrap');
+  const communeWrap = document.getElementById('communeWrap');
+  const deptLabel = document.getElementById('deptLabel');
+  const communeLabel = document.getElementById('communeLabel');
+
+  resetSelect(document.getElementById('rdvDept'), '— chargement… —');
+  resetSelect(document.getElementById('rdvArr'), '— d\'abord le département —');
+  resetSelect(document.getElementById('rdvCity'), '— d\'abord l\'arrondissement —');
+  communeWrap.style.display = 'none';
+  level2.style.display = 'none';
+
+  if (!pays) return;
+
+  const data = await loadGeoData(pays);
+  if (!data) return;
+
+  level2.style.display = '';
+
+  if (pays === 'HT') {
+    deptLabel.textContent = 'Département';
+    arrWrap.style.display = '';
+    communeLabel.textContent = 'Commune / Ville *';
+    fillSelect(
+      document.getElementById('rdvDept'),
+      data.departements.map(d => ({ value: d.nom, label: d.nom })),
+      '— Sélectionner un département —'
+    );
+  } else {
+    deptLabel.textContent = 'Province';
+    arrWrap.style.display = 'none'; /* pas d'arrondissement pour RepDom */
+    communeLabel.textContent = 'Municipalité / Ville *';
+    fillSelect(
+      document.getElementById('rdvDept'),
+      data.provinces.map(p => ({ value: p.nom, label: p.nom })),
+      '— Sélectionner une province —'
+    );
+    communeWrap.style.display = '';
+    resetSelect(document.getElementById('rdvCity'), '— d\'abord la province —');
+  }
+}
+
+async function onDeptChange() {
+  const pays = document.getElementById('rdvPays').value;
+  const deptVal = document.getElementById('rdvDept').value;
+  const communeWrap = document.getElementById('communeWrap');
+
+  resetSelect(document.getElementById('rdvArr'), '— d\'abord le département —');
+  resetSelect(document.getElementById('rdvCity'), '— d\'abord l\'arrondissement —');
+  communeWrap.style.display = 'none';
+
+  if (!deptVal) return;
+  const data = await loadGeoData(pays);
+  if (!data) return;
+
+  if (pays === 'HT') {
+    const dept = data.departements.find(d => d.nom === deptVal);
+    if (!dept) return;
+    fillSelect(
+      document.getElementById('rdvArr'),
+      dept.arrondissements.map(a => ({ value: a.nom, label: a.nom })),
+      '— Sélectionner un arrondissement —'
+    );
+  } else {
+    /* République Dominicaine : dept = province, pas d'arrondissement */
+    const prov = data.provinces.find(p => p.nom === deptVal);
+    if (!prov) return;
+    fillSelect(
+      document.getElementById('rdvCity'),
+      prov.municipalites.map(m => ({ value: m, label: m })),
+      '— Sélectionner une municipalité —'
+    );
+    communeWrap.style.display = '';
+  }
+}
+
+async function onArrChange() {
+  /* Haïti seulement */
+  const deptVal = document.getElementById('rdvDept').value;
+  const arrVal  = document.getElementById('rdvArr').value;
+  const communeWrap = document.getElementById('communeWrap');
+
+  resetSelect(document.getElementById('rdvCity'), '— d\'abord l\'arrondissement —');
+  communeWrap.style.display = 'none';
+  if (!arrVal) return;
+
+  const data = await loadGeoData('HT');
+  if (!data) return;
+
+  const dept = data.departements.find(d => d.nom === deptVal);
+  const arr  = dept?.arrondissements.find(a => a.nom === arrVal);
+  if (!arr) return;
+
+  fillSelect(
+    document.getElementById('rdvCity'),
+    arr.communes.map(c => ({ value: c, label: c })),
+    '— Sélectionner une commune —'
+  );
+  communeWrap.style.display = '';
+}
+
+window.onPaysChange  = onPaysChange;
+window.onDeptChange  = onDeptChange;
+window.onArrChange   = onArrChange;
+</script>
+
+<!-- ══ FORM LOGIC ══ -->
+<script>
+  function toggleSection(header) { header.closest('.section').classList.toggle('open'); }
+  window.toggleSection = toggleSection;
+
+  function updateCounter(inputId, counterId, max) {
+    const len = document.getElementById(inputId).value.length;
+    const el = document.getElementById(counterId);
+    el.textContent = `${len} / ${max}`;
+    el.className = 'char-counter' + (len > max * 0.9 ? ' warn' : '') + (len >= max ? ' over' : '');
+  }
+  window.updateCounter = updateCounter;
+
+  const msState = {};
+  function toggleMS(id) {
+    const wrap = document.getElementById(id);
+    const trigger = wrap.querySelector('.ms-trigger');
+    const dropdown = wrap.querySelector('.ms-dropdown');
+    const isOpen = dropdown.classList.contains('show');
+    document.querySelectorAll('.ms-dropdown.show').forEach(d => { d.classList.remove('show'); d.closest('.multi-select').querySelector('.ms-trigger').classList.remove('open'); });
+    if (!isOpen) { dropdown.classList.add('show'); trigger.classList.add('open'); }
+  }
+  window.toggleMS = toggleMS;
+
+  function selectMS(id, optEl) {
+    if (!msState[id]) msState[id] = new Set();
+    const val = optEl.dataset.value;
+    if (msState[id].has(val)) { msState[id].delete(val); optEl.classList.remove('selected'); }
+    else { msState[id].add(val); optEl.classList.add('selected'); }
+    renderMSTags(id);
+  }
+  window.selectMS = selectMS;
+
+  function removeMSTag(id, val) {
+    if (msState[id]) msState[id].delete(val);
+    document.getElementById(id).querySelector(`.ms-option[data-value="${val}"]`)?.classList.remove('selected');
+    renderMSTags(id);
+  }
+  window.removeMSTag = removeMSTag;
+
+  function renderMSTags(id) {
+    const wrap = document.getElementById(id);
+    const trigger = wrap.querySelector('.ms-trigger');
+    const placeholder = trigger.querySelector('.ms-placeholder');
+    trigger.querySelectorAll('.ms-tag').forEach(t => t.remove());
+    const vals = msState[id] ? [...msState[id]] : [];
+    placeholder.style.display = vals.length === 0 ? '' : 'none';
+    vals.forEach(v => {
+      const label = wrap.querySelector(`.ms-option[data-value="${v}"]`)?.textContent?.trim() || v;
+      const tag = document.createElement('span');
+      tag.className = 'ms-tag';
+      tag.innerHTML = `${label} <span class="ms-tag-rm" onclick="event.stopPropagation();removeMSTag('${id}','${v}')">✕</span>`;
+      trigger.insertBefore(tag, placeholder);
+    });
+  }
+
+  function filterMS(id, query) {
+    const wrap = document.getElementById(id);
+    const q = query.toLowerCase();
+    wrap.querySelectorAll('.ms-option').forEach(opt => { opt.style.display = opt.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+    wrap.querySelectorAll('.ms-group-label').forEach(lbl => {
+      let next = lbl.nextElementSibling; let vis = false;
+      while (next && !next.classList.contains('ms-group-label')) { if (next.style.display !== 'none') vis = true; next = next.nextElementSibling; }
+      lbl.style.display = vis ? '' : 'none';
+    });
+  }
+  window.filterMS = filterMS;
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.multi-select')) {
+      document.querySelectorAll('.ms-dropdown.show').forEach(d => { d.classList.remove('show'); d.closest('.multi-select').querySelector('.ms-trigger').classList.remove('open'); });
+    }
+  });
+
+  function toggleConsent(label) {
+    label.classList.toggle('checked');
+    label.querySelector('input[type=checkbox]').checked = label.classList.contains('checked');
+  }
+  window.toggleConsent = toggleConsent;
+
+  document.getElementById('rdvDate').min = new Date().toISOString().split('T')[0];
+
+  function getFormData() {
+    const val    = id => document.getElementById(id)?.value?.trim() ?? '';
+    const intVal = id => parseInt(document.getElementById(id)?.value ?? '0', 10) || 0;
+    const fltVal = id => parseFloat(document.getElementById(id)?.value ?? '0') || 0;
+    const consents = ['c1','c2','c3','c4'].map(id => document.getElementById(id)?.classList.contains('checked'));
+    const practices = msState['ms-practices'] ? [...msState['ms-practices']] : [];
+
+    /* Reconstruit la "city" à partir des 3 selects pour rétrocompat DB */
+    const pays = val('rdvPays');
+    const dept = val('rdvDept');
+    const arr  = val('rdvArr');
+    const commune = val('rdvCity');
+    const cityDisplay = [dept, arr, commune].filter(Boolean).join(' › ');
+
+    return {
+      title: val('rdvTitle'), type: val('rdvType'), description: val('rdvDesc'),
+      date: val('rdvDate'), time: val('rdvTime'), duration: val('rdvDuration'),
+      pays, departement: dept, arrondissement: arr,
+      city: cityDisplay || commune,
+      venue: val('rdvVenue'), slots: intVal('rdvSlots'),
+      dress_code: val('rdvDress'),
+      participation_fee: fltVal('rdvFee'),
+      creator_gender: val('creatorGender'), creator_role: val('creatorRole'),
+      creator_count: intVal('creatorCount'), creator_orientation: val('creatorOrientation'),
+      creator_desc: val('creatorDesc'), creator_exp: val('creatorExp'),
+      seek_gender: val('seekGender'), seek_age_min: intVal('seekAgeMin'), seek_age_max: intVal('seekAgeMax'),
+      seek_rel_type: val('seekRelType'), seek_count: intVal('seekCountRange'),
+      practices_accepted: practices, practices_refused: val('practicesRefused'),
+      fantasmes: val('fantasmes'), rules: val('rdvRules'),
+      substances: val('rdvSubstances'), protection: val('rdvProtection'), ist: val('rdvIST'),
+      visibility: val('rdvVisibility'), approval: val('rdvApproval'),
+      hide_photos: val('hidePhotos') === 'oui', consents,
+    };
+  }
+
+  function validate(data) {
+    const errs = [];
+    if (!data.title) errs.push('Titre obligatoire.');
+    if (!data.description) errs.push('Description obligatoire.');
+    if (!data.date) errs.push('Date obligatoire.');
+    if (!data.time) errs.push('Heure obligatoire.');
+    if (!data.pays) errs.push('Pays obligatoire.');
+    if (!data.city) errs.push('Ville / commune obligatoire.');
+    if (data.slots < 1) errs.push('Au moins 1 place disponible.');
+    if (data.seek_age_min < 18) errs.push('Âge minimum ≥ 18 ans.');
+    if (data.seek_age_max < data.seek_age_min) errs.push('Âge max ≥ âge min.');
+    if (!data.consents.every(Boolean)) errs.push('Toutes les cases de consentement doivent être cochées.');
+    return errs;
+  }
+
+  async function submitRdv() {
+    const msgEl = document.getElementById('globalMsg');
+    const btn   = document.getElementById('submitBtn');
+    msgEl.className = ''; msgEl.textContent = '';
+    const data = getFormData();
+    const errors = validate(data);
+    if (errors.length) { msgEl.className = 'err'; msgEl.textContent = errors.join(' '); msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    const supabase = window._supabase, user = window._currentUser;
+    if (!supabase || !user) { msgEl.className = 'err'; msgEl.textContent = 'Session expirée — recharge la page.'; return; }
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publication…';
+    try {
+      const { data: profile, error: pErr } = await supabase.from('k_profiles').select('id').eq('user_id', user.id).maybeSingle();
+      if (pErr || !profile) throw new Error('Profil introuvable.');
+      const rdvPayload = {
+        profile_id: profile.id, title: data.title, type: data.type, description: data.description,
+        rdv_date: data.date, rdv_time: data.time, duration: data.duration || null,
+        pays: data.pays, departement: data.departement, arrondissement: data.arrondissement || null,
+        city: data.city, venue: data.venue, slots_available: data.slots,
+        dress_code: data.dress_code || null,
+        participation_fee: data.participation_fee || 0,
+        creator_gender: data.creator_gender, creator_role: data.creator_role,
+        creator_count: data.creator_count, creator_orientation: data.creator_orientation,
+        creator_desc: data.creator_desc || null, creator_exp: data.creator_exp,
+        seek_gender: data.seek_gender, seek_age_min: data.seek_age_min, seek_age_max: data.seek_age_max,
+        seek_rel_type: data.seek_rel_type, seek_count: data.seek_count,
+        practices_accepted: data.practices_accepted, practices_refused: data.practices_refused || null,
+        fantasmes: data.fantasmes || null, rules: data.rules || null,
+        substances: data.substances, protection: data.protection, ist: data.ist,
+        visibility: data.visibility, approval_mode: data.approval, hide_photos: data.hide_photos,
+        status: 'active', expires_at: new Date(Date.now() + 72*60*60*1000).toISOString(),
+      };
+      const { data: inserted, error: insErr } = await supabase.from('k_rendezvous').insert(rdvPayload).select('id').single();
+      if (insErr) throw insErr;
+      msgEl.className = 'ok'; msgEl.textContent = '✓ Rendez-vous publié avec succès !';
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => { window.location.href = `rdv-detail.html?id=${inserted.id}`; }, 1800);
+    } catch (err) {
+      console.error(err);
+      msgEl.className = 'err'; msgEl.textContent = `Erreur : ${err.message || 'Réessaye dans quelques instants.'}`;
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publier le rendez-vous';
+    }
+  }
+  window.submitRdv = submitRdv;
+</script>
+
+</body>
+</html>
